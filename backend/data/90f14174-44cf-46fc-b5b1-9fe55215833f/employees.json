@@ -1,0 +1,27 @@
+[
+  {
+    "id": "fc232cba-3984-4cc3-8700-ab0abd9a2299",
+    "employeeNumber": "EMP-1762680130855",
+    "firstName": "Halil",
+    "lastName": "Gayypov",
+    "email": "microsoft7779@gmail.com",
+    "phone": "+99363430338",
+    "position": "Safety Officer",
+    "department": "Idara Isleri",
+    "hireDate": "2025-11-09T21:00:00.000Z",
+    "status": "active",
+    "workLocation": "Туркменистан",
+    "safetyRole": "worker",
+    "certifications": [],
+    "incidentCount": 0,
+    "observationsSubmitted": 0,
+    "shift": "day",
+    "emergencyContact": {
+      "name": "Halil Gayypov",
+      "relationship": "",
+      "phone": "+99363430338"
+    },
+    "createdAt": "2025-11-09T09:22:10.885Z",
+    "updatedAt": "2025-11-09T09:22:10.885Z"
+  }
+]

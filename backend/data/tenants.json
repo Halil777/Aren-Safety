@@ -1,0 +1,74 @@
+[
+  {
+    "id": "47607748-c289-4f67-a00d-23cbc9b987dd",
+    "slug": "test",
+    "title": "Test",
+    "createdAt": "2025-11-07T14:45:41.421Z",
+    "updatedAt": "2025-11-07T14:45:41.421Z",
+    "admins": [
+      {
+        "id": "e6a7e20b-f884-48ab-8848-5f500b052699",
+        "login": "Tenant",
+        "email": "microsoft7779@gmail.com",
+        "firstName": "Halil",
+        "lastName": "Gayypov",
+        "passwordHash": "95d4176d9a5bf5038adc40f6bc31fd7320e33c2761e5910f882a54cd9ef8c8e1",
+        "createdAt": "2025-11-07T14:45:41.421Z"
+      }
+    ]
+  },
+  {
+    "id": "90f14174-44cf-46fc-b5b1-9fe55215833f",
+    "slug": "aren",
+    "title": "Aren",
+    "createdAt": "2025-11-07T14:51:10.475Z",
+    "updatedAt": "2025-11-07T14:51:10.475Z",
+    "admins": [
+      {
+        "id": "7143cc54-0853-42d7-b7a5-a8365be0b6b3",
+        "login": "Aren",
+        "email": "aren@gmail.com",
+        "firstName": "Aren",
+        "lastName": "Aren",
+        "passwordHash": "56f3dd67743d6bac8ff49b88db064419c9ad1022081285c532d34a0d0259474c",
+        "createdAt": "2025-11-07T14:51:10.475Z"
+      }
+    ]
+  },
+  {
+    "id": "b488a115-6779-4085-b516-5c89ea950938",
+    "slug": "halil",
+    "title": "Halil",
+    "createdAt": "2025-11-09T10:16:14.350Z",
+    "updatedAt": "2025-11-09T10:16:14.350Z",
+    "admins": [
+      {
+        "id": "3b47b107-7d21-48bb-86c7-535cd2aec0c7",
+        "login": "Halil",
+        "email": "microsoft7779@gmail.com",
+        "firstName": "Halil",
+        "lastName": "Gayypov",
+        "passwordHash": "f36817d7f2c4df2db48f53bce0a9c0c1527144f049bd093fce0d8f8348ce9b0f",
+        "createdAt": "2025-11-09T10:16:14.350Z"
+      }
+    ]
+  },
+  {
+    "id": "cf32e040-6083-40d5-a8d5-eaac638124f4",
+    "slug": "esta",
+    "title": "Esta",
+    "createdAt": "2025-11-09T11:10:03.316Z",
+    "updatedAt": "2025-11-09T11:10:03.316Z",
+    "admins": [
+      {
+        "id": "ec99c230-0dcf-4512-b63b-ef236f824d46",
+        "login": "Esta",
+        "email": "esta@gmail.com",
+        "firstName": "Esta",
+        "lastName": "Esta",
+        "passwordHash": "146529c390dbb944f75aa47182f79e119f4654473b868f2f79a9e733f90da2d4",
+        "createdAt": "2025-11-09T11:10:03.316Z"
+      }
+    ]
+  }
+]

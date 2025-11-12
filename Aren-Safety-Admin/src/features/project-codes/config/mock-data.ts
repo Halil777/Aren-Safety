@@ -1,0 +1,46 @@
+import type { ProjectCode } from '../types';
+
+export const mockProjectCodes: ProjectCode[] = [
+  {
+    key: '1',
+    code: 'PRJ-001',
+    projectName: 'İmalat Güvenlik Optimizasyonu',
+    client: 'ABC Sanayi',
+    startDate: '01.01.2025',
+    endDate: '31.12.2025',
+    status: 'ACTIVE',
+    manager: 'Ahmet Yılmaz',
+    department: 'İmalat',
+  },
+  {
+    key: '2',
+    code: 'PRJ-002',
+    projectName: 'Kalite Kontrol Sistemi',
+    client: 'XYZ Teknoloji',
+    startDate: '15.03.2025',
+    status: 'ACTIVE',
+    manager: 'Ayşe Demir',
+    department: 'Kalite',
+  },
+  {
+    key: '3',
+    code: 'PRJ-003',
+    projectName: 'Bakım Prosedürleri Güncellemesi',
+    client: 'DEF Mühendislik',
+    startDate: '10.02.2025',
+    endDate: '10.08.2025',
+    status: 'COMPLETED',
+    manager: 'Mehmet Kaya',
+    department: 'Bakım',
+  },
+  {
+    key: '4',
+    code: 'PRJ-004',
+    projectName: 'İSG Eğitim Programı',
+    client: 'GHI Holding',
+    startDate: '05.04.2025',
+    status: 'ON_HOLD',
+    manager: 'Fatma Şahin',
+    department: 'Yönetim',
+  },
+];

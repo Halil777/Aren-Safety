@@ -1,0 +1,17 @@
+﻿{
+  "list": {
+    "title": "Uyarılar ve cezalar",
+    "columns": {
+      "type": "Tür",
+      "status": "Durum",
+      "amount": "Tutar",
+      "issued": "Yayın tarihi",
+      "employee": "Çalışan"
+    }
+  },
+  "detail": {
+    "policy": "Politika referansı",
+    "history": "Değişiklik geçmişi",
+    "export": "PDF olarak dışa aktar"
+  }
+}

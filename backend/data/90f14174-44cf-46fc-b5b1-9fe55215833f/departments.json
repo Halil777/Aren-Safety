@@ -1,0 +1,20 @@
+[
+  {
+    "id": "d62f7bdc-1d8c-4d13-8003-b72bf09343c8",
+    "title_en": "Safety",
+    "title_ru": "Ohrana Truda",
+    "title_tr": "Is Guvenligi",
+    "status": true,
+    "createdAt": "2025-11-08T08:07:37.429Z",
+    "updatedAt": "2025-11-10T13:28:47.309Z"
+  },
+  {
+    "id": "b7fbdc93-03d1-4b8e-aba1-b05f47f9d9fd",
+    "title_en": "Idara Isleri",
+    "title_ru": "Idara Isleri",
+    "title_tr": "Idara Isleri",
+    "status": true,
+    "createdAt": "2025-11-08T08:09:08.034Z",
+    "updatedAt": "2025-11-08T08:09:08.034Z"
+  }
+]

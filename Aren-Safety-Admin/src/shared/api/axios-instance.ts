@@ -62,7 +62,11 @@ axiosInstance.interceptors.request.use(
     }
 
     // 4. Add request ID for tracing
-    config.headers['X-Request-Id'] = crypto.randomUUID();
+    // Use crypto.randomUUID() if available, otherwise generate a simple unique ID
+    const requestId = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    config.headers['X-Request-Id'] = requestId;
 
     return config;
   },

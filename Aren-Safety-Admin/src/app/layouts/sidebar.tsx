@@ -154,7 +154,7 @@ export function Sidebar({ collapsed }: SidebarProps) {
     {
       key: buildPath("admin"),
       icon: <UserCog size={20} />,
-      label: "User Management",
+      label: t("nav.admin"),
     },
     {
       key: buildPath("observations"),

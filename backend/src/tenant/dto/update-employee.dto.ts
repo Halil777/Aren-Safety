@@ -95,6 +95,11 @@ export class UpdateEmployeeDto {
   @IsEnum(['day', 'night', 'rotating'])
   shift?: 'day' | 'night' | 'rotating';
 
+  // Supervisor
+  @IsOptional()
+  @IsString()
+  supervisorId?: string;
+
   // Inspector-specific
   @IsOptional()
   @IsString()

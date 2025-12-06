@@ -9,12 +9,15 @@ import { AuthModule } from './auth/auth.module';
 import { SuperAdminModule } from './super-admin/super-admin.module';
 import { DepartmentsController } from './tenant/departments.controller';
 import { ProjectCodesController } from './tenant/project-codes.controller';
-import { AdminUsersController } from './tenant/admin-users.controller';
 import { ObservationsController } from './tenant/observations.controller';
 import { TrainingController } from './tenant/training.controller';
 import { EmployeesController } from './tenant/employees.controller';
 import { SettingsController } from './tenant/settings.controller';
 import { UsersController } from './tenant/users.controller';
+import { SupervisorsController } from './tenant/supervisors.controller';
+import { CategoriesController } from './tenant/categories.controller';
+import { BranchesController } from './tenant/branches.controller';
+import { UserRolesController } from './tenant/user-roles.controller';
 import { StorageModule } from './storage/storage.module';
 
 @Module({
@@ -51,12 +54,15 @@ import { StorageModule } from './storage/storage.module';
     AppController,
     DepartmentsController,
     ProjectCodesController,
-    AdminUsersController,
     ObservationsController,
     TrainingController,
     EmployeesController,
     SettingsController,
     UsersController,
+    SupervisorsController,
+    CategoriesController,
+    BranchesController,
+    UserRolesController,
   ],
   providers: [AppService],
 })

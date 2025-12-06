@@ -1,0 +1,38 @@
+:root {
+  color-scheme: light dark;
+  --bg: #0b0d13;
+  --surface: #12151f;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --primary: #60a5fa;
+  --primary-600: #3b82f6;
+  --border: #222636;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #f7f8fa;
+  --text: #111827;
+  --muted: #6b7280;
+  --primary: #2563eb;
+  --primary-600: #1d4ed8;
+  --border: #e5e7eb;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b0d13;
+  --surface: #12151f;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --primary: #60a5fa;
+  --primary-600: #3b82f6;
+  --border: #222636;
+}
+::selection { background: color-mix(in oklab, var(--primary) 25%, transparent); color: var(--text); }
+.nav-blur {
+  background: color-mix(in oklab, var(--bg) 84%, transparent);
+  -webkit-backdrop-filter: saturate(120%) blur(8px);
+  backdrop-filter: saturate(120%) blur(8px);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+

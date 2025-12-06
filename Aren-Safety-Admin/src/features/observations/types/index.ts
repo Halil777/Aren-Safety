@@ -6,6 +6,13 @@ export type ObservationUpperCategory = 'hse' | 'quality' | 'equipment' | 'enviro
 export type ObservationLowerCategory = 'ppe' | 'documentation' | 'machinery' | 'procedure' | 'other';
 export type NonconformityType = 'safety' | 'procedure' | 'equipment' | 'environment' | 'other';
 
+export interface SupervisorResponse {
+  description?: string;
+  images?: string[];
+  videos?: string[];
+  respondedAt?: string;
+}
+
 export interface Observation {
   key: string;
   id: string;
@@ -23,6 +30,8 @@ export interface Observation {
   description_en?: string;
   description_ru?: string;
   description_tr?: string;
+  supervisorId?: string;
+  supervisorResponse?: SupervisorResponse;
 }
 
 export interface ObservationFilterParams {

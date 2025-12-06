@@ -1,0 +1,54 @@
+@import './styles/theme.css';
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--text);
+  background: radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--primary) 12%, transparent), transparent) no-repeat,
+              var(--bg);
+  accent-color: var(--primary);
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; height: auto; }
+button { font: inherit; }
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.section { padding: 80px 0; }
+.section-sm { padding: 48px 0; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+.shadow-hover { transition: transform .25s ease, box-shadow .25s ease; }
+.shadow-hover:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.1); }
+
+.nav-link { opacity: .8; padding: 8px 10px; border-radius: 10px; }
+.nav-link.active, .nav-link:hover { opacity: 1; background: color-mix(in oklab, var(--primary) 10%, transparent); }
+
+/* Responsive tweaks */
+.nav-desktop { display: flex; }
+.nav-mobile, .nav-mobile-toggle { display: none; }
+@media (max-width: 900px) {
+  .nav-desktop { display: none !important; }
+  .nav-mobile-toggle { display: inline-flex !important; }
+  .section { padding: 56px 0; }
+}
+/* Hero grid fallback */
+.hero-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: center; }
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; }
+}
+/* Feature grid */
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px)  { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px)  { .grid-4 { grid-template-columns: 1fr; } }

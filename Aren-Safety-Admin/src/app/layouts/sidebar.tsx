@@ -9,7 +9,9 @@ import {
   GraduationCap,
   Settings,
   Shield,
-  UserCog,
+  UserCheck,
+  Tags,
+  GitBranch,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
@@ -152,9 +154,9 @@ export function Sidebar({ collapsed }: SidebarProps) {
       label: t("nav.team"),
     },
     {
-      key: buildPath("admin"),
-      icon: <UserCog size={20} />,
-      label: t("nav.admin"),
+      key: buildPath("supervisors"),
+      icon: <UserCheck size={20} />,
+      label: t("nav.supervisors"),
     },
     {
       key: buildPath("observations"),
@@ -170,6 +172,16 @@ export function Sidebar({ collapsed }: SidebarProps) {
       key: buildPath("project-codes"),
       icon: <FolderCode size={20} />,
       label: t("nav.projectCodes"),
+    },
+    {
+      key: buildPath("categories"),
+      icon: <Tags size={20} />,
+      label: t("nav.categories"),
+    },
+    {
+      key: buildPath("branches"),
+      icon: <GitBranch size={20} />,
+      label: t("nav.branches"),
     },
     {
       key: buildPath("training"),

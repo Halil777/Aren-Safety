@@ -1,0 +1,18 @@
+[
+  {
+    "id": "6a1a437d-0d8d-40fd-9093-9383512077dc",
+    "firstName": "Fikret",
+    "lastName": "Emir!",
+    "login": "Fikret",
+    "passwordHash": "7071428b6b65916c0694269944ea292b825d28ac891003bbdb64deca6eb45683",
+    "email": "femir@estacons.ru",
+    "position": "Head of Personal",
+    "projectIds": [
+      "sibur"
+    ],
+    "phone": "+79115098859",
+    "department": "Personal",
+    "createdAt": "2025-11-22T18:12:27.293Z",
+    "updatedAt": "2025-11-22T18:13:12.877Z"
+  }
+]

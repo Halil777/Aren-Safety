@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards, Query, BadRequestException, NotFoundException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { randomUUID } from 'crypto';
 import { StorageService } from '../storage/storage.service';
 import { TenantContextGuard } from './tenant.guard';
@@ -6,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { AuthGuard } from '../common/guards/auth.guard';
 
 type UserRecord = {
   id: string;
@@ -25,7 +27,9 @@ type UserRecord = {
   updatedAt: string;
 };
 
-@UseGuards(TenantContextGuard, RolesGuard)
+@ApiTags('Users')
+@ApiBearerAuth()
+@UseGuards(AuthGuard, TenantContextGuard, RolesGuard)
 @Controller('tenant/users')
 export class UsersController {
   constructor(private readonly storage: StorageService) {}
@@ -39,6 +43,12 @@ export class UsersController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all users', description: 'Retrieve list of users with optional filters' })
+  @ApiQuery({ name: 'role', required: false, enum: ['admin', 'manager', 'user', 'viewer'] })
+  @ApiQuery({ name: 'department', required: false, type: String })
+  @ApiQuery({ name: 'isActive', required: false, type: String })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiResponse({ status: 200, description: 'List of users retrieved successfully' })
   list(
     @Req() req: any,
     @Query('role') role?: string,
@@ -73,6 +83,8 @@ export class UsersController {
   }
 
   @Get('stats')
+  @ApiOperation({ summary: 'Get user statistics', description: 'Retrieve user statistics including counts and distributions' })
+  @ApiResponse({ status: 200, description: 'User statistics retrieved successfully' })
   getStats(@Req() req: any) {
     const users = this.read(req.tenantId);
 
@@ -110,6 +122,10 @@ export class UsersController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get user by ID', description: 'Retrieve a single user by their ID' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   get(@Req() req: any, @Param('id') id: string) {
     const user = this.read(req.tenantId).find((d) => d.id === id);
     if (user) {
@@ -122,6 +138,11 @@ export class UsersController {
 
   @Post()
   @Roles('admin', 'manager')
+  @ApiOperation({ summary: 'Create new user', description: 'Create a new user (requires admin or manager role)' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({ status: 400, description: 'Username or email already exists' })
+  @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
   create(@Req() req: any, @Body() dto: CreateUserDto) {
     const now = new Date().toISOString();
 
@@ -140,7 +161,7 @@ export class UsersController {
       firstName: dto.firstName,
       lastName: dto.lastName,
       phone: dto.phone,
-      role: dto.role,
+      role: dto.role ?? 'user', // Default to 'user' role if not specified
       department: dto.department,
       position: dto.position,
       avatar: dto.avatar,
@@ -160,6 +181,12 @@ export class UsersController {
 
   @Patch(':id')
   @Roles('admin', 'manager')
+  @ApiOperation({ summary: 'Update user', description: 'Update an existing user (requires admin or manager role)' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
   update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateUserDto) {
     const all = this.read(req.tenantId);
     const idx = all.findIndex((d) => d.id === id);
@@ -190,6 +217,11 @@ export class UsersController {
 
   @Delete(':id')
   @Roles('admin')
+  @ApiOperation({ summary: 'Delete user', description: 'Delete a user (requires admin role)' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
   remove(@Req() req: any, @Param('id') id: string) {
     const all = this.read(req.tenantId);
     const userToDelete = all.find((d) => d.id === id);

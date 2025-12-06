@@ -58,4 +58,8 @@ export class UpdateObservationDto {
   @IsOptional()
   @IsString()
   description_tr?: string;
+
+  @IsOptional()
+  @IsString()
+  supervisorId?: string;
 }

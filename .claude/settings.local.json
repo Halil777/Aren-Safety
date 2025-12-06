@@ -4,7 +4,10 @@
       "Bash(npm run build:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(rm:*)",
+      "Bash(npm run start:dev:*)",
+      "Bash(timeout 10 bash:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, TeamOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/app/providers/theme-provider';
 import { ExportButtons } from '@/shared/components/ExportButtons';
 import { exportToExcel, exportToPDF, printTable, prepareDataForExport } from '@/shared/utils/exportUtils';
-import { EmployeesTab, CreateEmployeeModal } from './components';
-import { useEmployees } from '@/features/employees/api';
+import { UsersTab, CreateUserModal } from './components';
+import { UserRoleDrawer } from './components/UserRoleDrawer';
+import { useUsers } from '@/features/users/api';
 import type { ExportType } from '@/shared/components/ExportButtons';
 
 const TeamPage: React.FC = () => {
@@ -16,36 +17,33 @@ const TeamPage: React.FC = () => {
 
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isUserRoleDrawerOpen, setIsUserRoleDrawerOpen] = useState(false);
 
-  // Fetch employees data for export
-  const { data: employees = [], isLoading } = useEmployees();
+  // Fetch users data for export
+  const { data: users = [], isLoading } = useUsers();
 
   const handleExport = (type: ExportType) => {
-    const exportData = prepareDataForExport(employees.map(emp => ({
-      [t('team.export.employeeNumber')]: emp.employeeNumber,
-      [t('team.export.firstName')]: emp.firstName,
-      [t('team.export.lastName')]: emp.lastName,
-      [t('team.export.email')]: emp.email,
-      [t('team.export.phone')]: emp.phone,
-      [t('team.export.position')]: emp.position,
-      [t('team.export.department')]: emp.department,
-      [t('team.export.location')]: emp.workLocation,
-      [t('team.export.status')]: emp.status,
-      [t('team.export.safetyRole')]: emp.safetyRole || '-',
-      [t('team.export.hireDate')]: new Date(emp.hireDate).toLocaleDateString(),
-      [t('team.export.certifications')]: emp.certifications.join(', '),
-      [t('team.export.incidents')]: emp.incidentCount,
+    const exportData = prepareDataForExport(users.map(user => ({
+      'Username': user.username,
+      'First Name': user.firstName,
+      'Last Name': user.lastName,
+      'Email': user.email,
+      'Phone': user.phone || '-',
+      'Department': user.department || '-',
+      'Position': user.position || '-',
+      'Status': user.isActive ? 'Active' : 'Inactive',
+      'Last Login': user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never',
     })), []);
 
     switch (type) {
       case 'excel':
-        exportToExcel(exportData, 'employees', 'Employees');
+        exportToExcel(exportData, 'users', 'Team Users');
         break;
       case 'pdf':
-        exportToPDF('employees-table', 'employees');
+        exportToPDF('users-table', 'users');
         break;
       case 'print':
-        printTable('employees-table');
+        printTable('users-table');
         break;
     }
   };
@@ -64,29 +62,42 @@ const TeamPage: React.FC = () => {
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <Button
+            icon={<TeamOutlined />}
+            onClick={() => setIsUserRoleDrawerOpen(true)}
+            size="large"
+          >
+            {t('team.userRolesButton')}
+          </Button>
+          <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setIsCreateModalOpen(true)}
             size="large"
           >
-            {t('team.createEmployee')}
+            {t('team.createUser')}
           </Button>
           <ExportButtons onExport={handleExport} disabled={isLoading} />
         </div>
       </div>
 
-      {/* Employees Table */}
-      <div id="employees-table">
-        <EmployeesTab />
+      {/* Users Table */}
+      <div id="users-table">
+        <UsersTab />
       </div>
 
-      {/* Create Employee Modal */}
-      <CreateEmployeeModal
+      {/* Create User Modal */}
+      <CreateUserModal
         open={isCreateModalOpen}
         onCancel={() => setIsCreateModalOpen(false)}
         onSuccess={() => {
           // Modal will close automatically
         }}
+      />
+
+      {/* User Role Drawer */}
+      <UserRoleDrawer
+        open={isUserRoleDrawerOpen}
+        onClose={() => setIsUserRoleDrawerOpen(false)}
       />
     </div>
   );

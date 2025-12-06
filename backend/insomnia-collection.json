@@ -1,0 +1,214 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-12-02T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_auth_login",
+      "parentId": "fld_auth",
+      "type": "request",
+      "name": "Login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"login\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+      },
+      "headers": [
+        {"name": "Content-Type", "value": "application/json"}
+      ]
+    },
+    {
+      "_id": "req_users_list",
+      "parentId": "fld_users",
+      "type": "request",
+      "name": "List Users",
+      "method": "GET",
+      "url": "{{ _.base_url }}/tenant/users",
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"}
+      ]
+    },
+    {
+      "_id": "req_users_create",
+      "parentId": "fld_users",
+      "type": "request",
+      "name": "Create User",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tenant/users",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"username\": \"john.doe\",\n  \"password\": \"SecurePass123\",\n  \"email\": \"john.doe@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"user\",\n  \"department\": \"Engineering\",\n  \"isActive\": true\n}"
+      },
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"},
+        {"name": "Content-Type", "value": "application/json"}
+      ]
+    },
+    {
+      "_id": "req_users_get",
+      "parentId": "fld_users",
+      "type": "request",
+      "name": "Get User by ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/tenant/users/:id",
+      "parameters": [
+        {"name": "id", "value": "user-id-here", "disabled": false}
+      ],
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"}
+      ]
+    },
+    {
+      "_id": "req_users_stats",
+      "parentId": "fld_users",
+      "type": "request",
+      "name": "Get User Statistics",
+      "method": "GET",
+      "url": "{{ _.base_url }}/tenant/users/stats",
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"}
+      ]
+    },
+    {
+      "_id": "req_observations_list",
+      "parentId": "fld_observations",
+      "type": "request",
+      "name": "List Observations",
+      "method": "GET",
+      "url": "{{ _.base_url }}/tenant/observations",
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"}
+      ]
+    },
+    {
+      "_id": "req_observations_create",
+      "parentId": "fld_observations",
+      "type": "request",
+      "name": "Create Observation",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tenant/observations",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"projectCode\": \"PRJ-001\",\n  \"nameSurname\": \"John Doe\",\n  \"department\": \"Construction\",\n  \"nonconformityType\": \"Safety Violation\",\n  \"observationDate\": \"2025-01-15T10:30:00Z\",\n  \"riskLevel\": 3,\n  \"status\": \"Open\",\n  \"deadline\": \"2025-02-01\",\n  \"description_en\": \"Worker not wearing helmet\"\n}"
+      },
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"},
+        {"name": "Content-Type", "value": "application/json"}
+      ]
+    },
+    {
+      "_id": "req_employees_list",
+      "parentId": "fld_employees",
+      "type": "request",
+      "name": "List Employees",
+      "method": "GET",
+      "url": "{{ _.base_url }}/tenant/employees",
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"}
+      ]
+    },
+    {
+      "_id": "req_supervisors_list",
+      "parentId": "fld_supervisors",
+      "type": "request",
+      "name": "List Supervisors",
+      "method": "GET",
+      "url": "{{ _.base_url }}/tenant/supervisors",
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"}
+      ]
+    },
+    {
+      "_id": "req_departments_list",
+      "parentId": "fld_departments",
+      "type": "request",
+      "name": "List Departments",
+      "method": "GET",
+      "url": "{{ _.base_url }}/tenant/departments",
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.tenant_token }}"},
+        {"name": "x-tenant-id", "value": "{{ _.tenant_id }}"}
+      ]
+    },
+    {
+      "_id": "req_tenants_list",
+      "parentId": "fld_superadmin",
+      "type": "request",
+      "name": "List Tenants",
+      "method": "GET",
+      "url": "{{ _.base_url }}/super-admin/tenants",
+      "headers": [
+        {"name": "Authorization", "value": "Bearer {{ _.superadmin_token }}"}
+      ]
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_main",
+      "type": "request_group",
+      "name": "Authentication"
+    },
+    {
+      "_id": "fld_users",
+      "parentId": "wrk_main",
+      "type": "request_group",
+      "name": "Users"
+    },
+    {
+      "_id": "fld_observations",
+      "parentId": "wrk_main",
+      "type": "request_group",
+      "name": "Observations"
+    },
+    {
+      "_id": "fld_employees",
+      "parentId": "wrk_main",
+      "type": "request_group",
+      "name": "Employees"
+    },
+    {
+      "_id": "fld_supervisors",
+      "parentId": "wrk_main",
+      "type": "request_group",
+      "name": "Supervisors"
+    },
+    {
+      "_id": "fld_departments",
+      "parentId": "wrk_main",
+      "type": "request_group",
+      "name": "Departments"
+    },
+    {
+      "_id": "fld_superadmin",
+      "parentId": "wrk_main",
+      "type": "request_group",
+      "name": "Super Admin"
+    },
+    {
+      "_id": "wrk_main",
+      "type": "workspace",
+      "name": "Safety Management API"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_main",
+      "type": "environment",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000/api",
+        "tenant_token": "",
+        "superadmin_token": "",
+        "tenant_id": "90f14174-44cf-46fc-b5b1-9fe55215833f"
+      }
+    }
+  ]
+}

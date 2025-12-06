@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { randomUUID } from 'crypto';
 import { StorageService } from '../storage/storage.service';
 import { TenantRecord } from '../shared/types';
@@ -8,6 +9,8 @@ import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { CreateTenantAdminDto } from './dto/create-tenant-admin.dto';
 import { createHash } from 'crypto';
 
+@ApiTags('Super Admin - Tenants')
+@ApiBearerAuth()
 @UseGuards(SuperAdminGuard)
 @Controller('super-admin/tenants')
 export class SuperAdminController {
@@ -18,16 +21,25 @@ export class SuperAdminController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all tenants', description: 'Retrieve list of all tenants (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'List of tenants retrieved successfully' })
   list(): TenantRecord[] {
     return this.storage.readTenants();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get tenant by ID', description: 'Retrieve a single tenant by ID (Super Admin only)' })
+  @ApiParam({ name: 'id', description: 'Tenant ID' })
+  @ApiResponse({ status: 200, description: 'Tenant retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Tenant not found' })
   get(@Param('id') id: string): TenantRecord | undefined {
     return this.storage.readTenants().find((t) => t.id === id);
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create new tenant', description: 'Create a new tenant (Super Admin only)' })
+  @ApiBody({ type: CreateTenantDto })
+  @ApiResponse({ status: 201, description: 'Tenant created successfully' })
   create(@Body() dto: CreateTenantDto): TenantRecord {
     const tenants = this.storage.readTenants();
     if (tenants.some((t) => t.slug === dto.slug)) {
@@ -61,6 +73,11 @@ export class SuperAdminController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update tenant', description: 'Update an existing tenant (Super Admin only)' })
+  @ApiParam({ name: 'id', description: 'Tenant ID' })
+  @ApiBody({ type: UpdateTenantDto })
+  @ApiResponse({ status: 200, description: 'Tenant updated successfully' })
+  @ApiResponse({ status: 404, description: 'Tenant not found' })
   update(@Param('id') id: string, @Body() dto: UpdateTenantDto): TenantRecord | undefined {
     const tenants = this.storage.readTenants();
     const idx = tenants.findIndex((t) => t.id === id);
@@ -76,6 +93,9 @@ export class SuperAdminController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete tenant', description: 'Delete a tenant (Super Admin only)' })
+  @ApiParam({ name: 'id', description: 'Tenant ID' })
+  @ApiResponse({ status: 200, description: 'Tenant deleted successfully' })
   remove(@Param('id') id: string) {
     const tenants = this.storage.readTenants();
     const filtered = tenants.filter((t) => t.id !== id);
@@ -84,6 +104,11 @@ export class SuperAdminController {
   }
 
   @Post(':id/admins')
+  @ApiOperation({ summary: 'Create tenant admin', description: 'Create an admin for a tenant (Super Admin only)' })
+  @ApiParam({ name: 'id', description: 'Tenant ID' })
+  @ApiBody({ type: CreateTenantAdminDto })
+  @ApiResponse({ status: 201, description: 'Admin created successfully' })
+  @ApiResponse({ status: 404, description: 'Tenant not found' })
   createAdmin(@Param('id') id: string, @Body() dto: CreateTenantAdminDto) {
     const tenants = this.storage.readTenants();
     const tenant = tenants.find((t) => t.id === id);

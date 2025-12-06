@@ -1,19 +1,5 @@
 [
   {
-    "id": "15e53afe-2c29-440c-96fb-8c9ec2ecce42",
-    "code": "sddsds",
-    "title_en": "sdsd",
-    "title_ru": "sdsd",
-    "title_tr": "sddfsdf",
-    "client": "dfsf",
-    "createdAt": "2025-11-07T18:36:28.070Z",
-    "updatedAt": "2025-11-08T08:36:03.374Z",
-    "startDate": "2025-11-01T21:00:00.000Z",
-    "endDate": "2026-11-18T21:00:00.000Z",
-    "headOfProject": "Ramazan",
-    "status": true
-  },
-  {
     "id": "64e7b5af-75f2-4613-8a5e-f63dad18b5bb",
     "code": "sibur",
     "title_en": "Sibur",

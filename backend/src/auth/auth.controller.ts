@@ -1,9 +1,11 @@
 import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD, SUPERADMIN_TOKEN } from './constants';
 import { StorageService } from '../storage/storage.service';
 import { createHash } from 'crypto';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly storage: StorageService) {}
@@ -13,6 +15,10 @@ export class AuthController {
     return createHash('sha256').update(password).digest('hex');
   }
   @Post('login')
+  @ApiOperation({ summary: 'User login', description: 'Authenticate user and return access token' })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
   login(@Body() dto: LoginDto) {
     const { login, password } = dto;
     // Super admin static

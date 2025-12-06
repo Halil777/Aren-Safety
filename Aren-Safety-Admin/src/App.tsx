@@ -27,8 +27,10 @@ import { DepartmentsPage } from '@/pages/departments/index';
 import { ProjectCodesPage } from '@/pages/project-codes/index';
 import { TrainingPage } from '@/pages/training/index';
 import TeamPage from '@/pages/team';
-import AdminPage from '@/pages/admin';
 import SettingsPage from '@/pages/settings';
+import SupervisorsPage from '@/pages/supervisors';
+import CategoriesPage from '@/pages/categories';
+import BranchesPage from '@/pages/branches';
 
 // Auth Pages
 import LoginPage from '@/pages/login-backend';
@@ -209,13 +211,15 @@ export default function App() {
             {/* Team (Combined Employees, Safety, Inspectors) */}
             <Route path="team" element={<TeamPage />} />
 
-            {/* User Management */}
-            <Route path="admin" element={<AdminPage />} />
+            {/* Supervisors */}
+            <Route path="supervisors" element={<SupervisorsPage />} />
 
             {/* Core Features (PRESERVED - no changes to these pages) */}
             <Route path="observations" element={<ObservationsPage />} />
             <Route path="departments" element={<DepartmentsPage />} />
             <Route path="project-codes" element={<ProjectCodesPage />} />
+            <Route path="categories" element={<CategoriesPage />} />
+            <Route path="branches" element={<BranchesPage />} />
 
             {/* Additional Features */}
             <Route path="training" element={<TrainingPage />} />

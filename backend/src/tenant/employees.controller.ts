@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { randomUUID } from 'crypto';
 import { StorageService } from '../storage/storage.service';
 import { TenantContextGuard } from './tenant.guard';
@@ -37,6 +38,9 @@ type EmployeeRecord = {
   workLocation: string;
   shift?: 'day' | 'night' | 'rotating';
 
+  // Supervisor
+  supervisorId?: string;
+
   // Inspector-specific (deprecated - use safetyRole: 'inspector')
   licenseId?: string;
   region?: string;
@@ -52,6 +56,8 @@ type EmployeeRecord = {
   updatedAt: string;
 };
 
+@ApiTags('Employees')
+@ApiBearerAuth()
 @UseGuards(TenantContextGuard)
 @Controller('tenant/employees')
 export class EmployeesController {

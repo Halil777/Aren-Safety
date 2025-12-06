@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from '@/shared/api/axios-instance';
 
+// Types
 export interface User {
   id: string;
   username: string;
@@ -18,74 +19,20 @@ export interface User {
   updatedAt: string;
 }
 
-export interface UserStats {
-  totalUsers: number;
-  activeUsers: number;
-  inactiveUsers: number;
-  roleDistribution: Record<string, number>;
-  departmentDistribution: Record<string, number>;
-  recentlyActive: number;
-}
-
-interface UserFilters {
-  role?: 'admin' | 'manager' | 'user' | 'viewer';
-  department?: string;
-  isActive?: boolean;
-  search?: string;
-}
-
-// Query Keys
-export const usersKeys = {
-  all: ['users'] as const,
-  list: (filters?: UserFilters) => [...usersKeys.all, 'list', filters] as const,
-  detail: (id: string) => [...usersKeys.all, 'detail', id] as const,
-  stats: () => [...usersKeys.all, 'stats'] as const,
-};
-
-// API Functions
-const fetchUsers = async (filters?: UserFilters): Promise<User[]> => {
-  const params = new URLSearchParams();
-  if (filters) {
-    if (filters.role) params.append('role', filters.role);
-    if (filters.department) params.append('department', filters.department);
-    if (filters.isActive !== undefined) params.append('isActive', String(filters.isActive));
-    if (filters.search) params.append('search', filters.search);
-  }
-  const { data } = await axios.get(`/tenant/users?${params.toString()}`);
-  return data;
-};
-
-const fetchUser = async (id: string): Promise<User> => {
-  const { data } = await axios.get(`/tenant/users/${id}`);
-  return data;
-};
-
-const fetchUserStats = async (): Promise<UserStats> => {
-  const { data } = await axios.get('/tenant/users/stats');
-  return data;
-};
-
-interface CreateUserPayload {
+export interface CreateUserInput {
   username: string;
   password: string;
   email: string;
   firstName: string;
   lastName: string;
   phone?: string;
-  role: 'admin' | 'manager' | 'user' | 'viewer';
+  role?: 'admin' | 'manager' | 'user' | 'viewer';
   department?: string;
   position?: string;
-  avatar?: string;
   isActive?: boolean;
-  lastLogin?: string;
 }
 
-const createUser = async (userData: CreateUserPayload): Promise<User> => {
-  const { data } = await axios.post('/tenant/users', userData);
-  return data;
-};
-
-interface UpdateUserPayload {
+export interface UpdateUserInput {
   username?: string;
   password?: string;
   email?: string;
@@ -95,13 +42,27 @@ interface UpdateUserPayload {
   role?: 'admin' | 'manager' | 'user' | 'viewer';
   department?: string;
   position?: string;
-  avatar?: string;
   isActive?: boolean;
-  lastLogin?: string;
 }
 
-const updateUser = async ({ id, userData }: { id: string; userData: UpdateUserPayload }): Promise<User> => {
-  const { data } = await axios.patch(`/tenant/users/${id}`, userData);
+// API functions
+const fetchUsers = async (): Promise<User[]> => {
+  const { data } = await axios.get('/tenant/users');
+  return data;
+};
+
+const fetchUser = async (id: string): Promise<User> => {
+  const { data } = await axios.get(`/tenant/users/${id}`);
+  return data;
+};
+
+const createUser = async (input: CreateUserInput): Promise<User> => {
+  const { data } = await axios.post('/tenant/users', input);
+  return data;
+};
+
+const updateUser = async ({ id, ...input }: UpdateUserInput & { id: string }): Promise<User> => {
+  const { data } = await axios.patch(`/tenant/users/${id}`, input);
   return data;
 };
 
@@ -109,26 +70,19 @@ const deleteUser = async (id: string): Promise<void> => {
   await axios.delete(`/tenant/users/${id}`);
 };
 
-// Hooks
-export const useUsers = (filters?: UserFilters) => {
+// React Query hooks
+export const useUsers = () => {
   return useQuery({
-    queryKey: usersKeys.list(filters),
-    queryFn: () => fetchUsers(filters),
+    queryKey: ['users'],
+    queryFn: fetchUsers,
   });
 };
 
 export const useUser = (id: string) => {
   return useQuery({
-    queryKey: usersKeys.detail(id),
+    queryKey: ['users', id],
     queryFn: () => fetchUser(id),
     enabled: !!id,
-  });
-};
-
-export const useUserStats = () => {
-  return useQuery({
-    queryKey: usersKeys.stats(),
-    queryFn: fetchUserStats,
   });
 };
 
@@ -137,44 +91,8 @@ export const useCreateUser = () => {
 
   return useMutation({
     mutationFn: createUser,
-    onMutate: async (newUser) => {
-      await queryClient.cancelQueries({ queryKey: usersKeys.all });
-      const previousUsers = queryClient.getQueriesData({ queryKey: usersKeys.all });
-
-      // Optimistic update
-      queryClient.setQueriesData({ queryKey: usersKeys.all }, (old: User[] | undefined) => {
-        if (!old) return old;
-        const tempUser: User = {
-          id: 'temp-' + Date.now(),
-          username: newUser.username,
-          email: newUser.email,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          phone: newUser.phone,
-          role: newUser.role,
-          department: newUser.department,
-          position: newUser.position,
-          avatar: newUser.avatar,
-          isActive: newUser.isActive ?? true,
-          lastLogin: newUser.lastLogin,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        return [...old, tempUser];
-      });
-
-      return { previousUsers };
-    },
-    onError: (_err, _newUser, context) => {
-      if (context?.previousUsers) {
-        context.previousUsers.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      queryClient.invalidateQueries({ queryKey: usersKeys.stats() });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
 };
@@ -184,39 +102,8 @@ export const useUpdateUser = () => {
 
   return useMutation({
     mutationFn: updateUser,
-    onMutate: async ({ id, userData }) => {
-      await queryClient.cancelQueries({ queryKey: usersKeys.all });
-      await queryClient.cancelQueries({ queryKey: usersKeys.detail(id) });
-
-      const previousUsers = queryClient.getQueriesData({ queryKey: usersKeys.all });
-      const previousUser = queryClient.getQueryData(usersKeys.detail(id));
-
-      queryClient.setQueriesData({ queryKey: usersKeys.all }, (old: User[] | undefined) => {
-        if (!old) return old;
-        return old.map((user) => user.id === id ? { ...user, ...userData, updatedAt: new Date().toISOString() } : user);
-      });
-
-      queryClient.setQueryData(usersKeys.detail(id), (old: User | undefined) => {
-        if (!old) return old;
-        return { ...old, ...userData, updatedAt: new Date().toISOString() };
-      });
-
-      return { previousUsers, previousUser, id };
-    },
-    onError: (_err, _variables, context) => {
-      if (context?.previousUsers) {
-        context.previousUsers.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      if (context?.previousUser) {
-        queryClient.setQueryData(usersKeys.detail(context.id), context.previousUser);
-      }
-    },
-    onSettled: (_, __, variables) => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      queryClient.invalidateQueries({ queryKey: usersKeys.detail(variables.id) });
-      queryClient.invalidateQueries({ queryKey: usersKeys.stats() });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
 };
@@ -226,27 +113,8 @@ export const useDeleteUser = () => {
 
   return useMutation({
     mutationFn: deleteUser,
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: usersKeys.all });
-      const previousUsers = queryClient.getQueriesData({ queryKey: usersKeys.all });
-
-      queryClient.setQueriesData({ queryKey: usersKeys.all }, (old: User[] | undefined) => {
-        if (!old) return old;
-        return old.filter((user) => user.id !== id);
-      });
-
-      return { previousUsers };
-    },
-    onError: (_err, _id, context) => {
-      if (context?.previousUsers) {
-        context.previousUsers.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      queryClient.invalidateQueries({ queryKey: usersKeys.stats() });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
 };

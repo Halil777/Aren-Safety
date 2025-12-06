@@ -18,3 +18,18 @@ export interface TenantRecord {
   updatedAt: string;
   admins: TenantAdmin[];
 }
+
+export interface Supervisor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  login: string;
+  passwordHash: string;
+  email?: string;
+  position: string;
+  projectIds: string[];
+  phone?: string;
+  department?: string;
+  createdAt: string;
+  updatedAt: string;
+}

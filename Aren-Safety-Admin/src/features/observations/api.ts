@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from '@/shared/api/axios-instance';
-import type { Observation, ObservationFilterParams } from './types';
+import type { Observation, ObservationFilterParams, SupervisorResponse } from './types';
 
 // Query Keys
 export const observationsKeys = {
@@ -40,6 +40,11 @@ const updateObservation = async ({ id, observationData }: { id: string; observat
 
 const deleteObservation = async (id: string): Promise<void> => {
   await axios.delete(`/tenant/observations/${id}`);
+};
+
+const addSupervisorResponse = async ({ id, responseData }: { id: string; responseData: Omit<SupervisorResponse, 'respondedAt'> }): Promise<Observation> => {
+  const { data } = await axios.post(`/tenant/observations/${id}/supervisor-response`, responseData);
+  return data;
 };
 
 // Hooks
@@ -88,6 +93,18 @@ export const useDeleteObservation = () => {
     mutationFn: deleteObservation,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: observationsKeys.all });
+    },
+  });
+};
+
+export const useAddSupervisorResponse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: addSupervisorResponse,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: observationsKeys.all });
+      queryClient.invalidateQueries({ queryKey: observationsKeys.detail(variables.id) });
     },
   });
 };

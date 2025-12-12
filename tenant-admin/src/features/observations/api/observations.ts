@@ -1,0 +1,26 @@
+import { ROUTES } from '@/shared/config/api'
+import { apiClient } from '@/shared/lib/api-client'
+import type { Observation, ObservationInput } from '../types/observation'
+
+export async function fetchObservations(): Promise<Observation[]> {
+  return apiClient.get<Observation[]>(ROUTES.OBSERVATIONS.LIST)
+}
+
+export async function createObservation(data: ObservationInput) {
+  return apiClient.post<Observation>(ROUTES.OBSERVATIONS.LIST, data)
+}
+
+export async function updateObservation(id: string, data: Partial<ObservationInput>) {
+  return apiClient.patch<Observation>(ROUTES.OBSERVATIONS.DETAIL(id), data)
+}
+
+export type ObservationMediaPayload = {
+  type: 'IMAGE' | 'VIDEO'
+  url: string
+  uploadedByUserId: string
+  isCorrective: boolean
+}
+
+export async function addObservationMedia(observationId: string, data: ObservationMediaPayload) {
+  return apiClient.post<unknown>(`${ROUTES.OBSERVATIONS.DETAIL(observationId)}/media`, data)
+}

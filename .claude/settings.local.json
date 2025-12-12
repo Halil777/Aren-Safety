@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm init -y)",
+      "Bash(ls:*)",
+      "Bash(npm run start:dev:*)",
+      "Bash(timeout /t 5)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill /F /PID 16072)",
+      "Bash(taskkill //F //PID 16072)",
+      "Bash(timeout /t 1)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

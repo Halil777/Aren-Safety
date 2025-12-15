@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true },
   { to: "/users", labelKey: "nav.users", icon: Users },
   { to: "/observations", labelKey: "nav.observations", icon: ClipboardList },
-  { to: "/tasks", labelKey: "nav.tasks", icon: ListChecks },
+
   {
     labelKey: "nav.source",
     icon: Layers,
@@ -44,6 +44,7 @@ const navItems: NavItem[] = [
       { to: "/projects", labelKey: "nav.projects", icon: FolderKanban },
       { to: "/departments", labelKey: "nav.departments", icon: Building2 },
       { to: "/companies", labelKey: "nav.companies", icon: Factory },
+      { to: "/tasks", labelKey: "nav.tasks", icon: ListChecks },
       { to: "/locations", labelKey: "nav.locations", icon: Building2 },
       { to: "/categories", labelKey: "nav.categories", icon: Layers },
       { to: "/subcategories", labelKey: "nav.subcategories", icon: GitBranch },
@@ -105,7 +106,6 @@ function Sidebar({
   items,
   isOpen,
   onToggle,
-  brandTitle,
   brandSubtitle,
   translate,
 }: SidebarProps) {
@@ -127,7 +127,7 @@ function Sidebar({
             </div>
             <div className="flex flex-col">
               <span className="text-base font-semibold leading-tight text-foreground">
-                {brandTitle || "ADMIN"}
+                {"ADMIN"}
               </span>
               <span className="text-xs text-muted-foreground">
                 {brandSubtitle}

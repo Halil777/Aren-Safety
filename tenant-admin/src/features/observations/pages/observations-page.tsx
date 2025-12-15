@@ -1,5 +1,5 @@
 import type React from 'react'
-import { ClipboardList, Pencil } from 'lucide-react'
+import { ClipboardList, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -15,6 +15,7 @@ import { useLocationsQuery } from '@/features/locations/api/hooks'
 import {
   useAddObservationMediaMutation,
   useCreateObservationMutation,
+  useDeleteObservationMutation,
   useObservationsQuery,
   useUpdateObservationMutation,
 } from '../api/hooks'
@@ -40,6 +41,7 @@ export function ObservationsPage() {
   const observationsQuery = useObservationsQuery()
   const createMutation = useCreateObservationMutation()
   const updateMutation = useUpdateObservationMutation()
+  const deleteMutation = useDeleteObservationMutation()
   const addMediaMutation = useAddObservationMediaMutation()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -67,6 +69,7 @@ export function ObservationsPage() {
   const isLoading = observationsQuery.isLoading
   const error = observationsQuery.error as Error | null | undefined
   const isSaving = createMutation.isPending || updateMutation.isPending
+  const isDeleting = deleteMutation.isPending
 
   const filteredSubcategories =
     subcategoriesQuery.data?.filter(sub => sub.categoryId === formState.categoryId) ?? []
@@ -126,6 +129,14 @@ export function ObservationsPage() {
   const handleCloseDrawer = () => {
     setDrawerOpen(false)
     setEditingId(null)
+  }
+
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm(
+      t('common.confirmDelete', { defaultValue: 'Are you sure you want to delete?' }),
+    )
+    if (!confirmed) return
+    await deleteMutation.mutateAsync(id)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -215,7 +226,7 @@ export function ObservationsPage() {
                   <Th>{t('observations.table.status', { defaultValue: 'Status' })}</Th>
                   <Th>{t('observations.table.company', { defaultValue: 'Company' })}</Th>
                   <Th>{t('observations.table.deadline', { defaultValue: 'Deadline' })}</Th>
-                  <Th className="w-24 text-center">
+                  <Th className="w-28 text-center">
                     {t('observations.table.actions', { defaultValue: 'Actions' })}
                   </Th>
                 </tr>
@@ -223,19 +234,19 @@ export function ObservationsPage() {
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-6 text-center text-sm text-muted-foreground">
                       {t('common.loading', { defaultValue: 'Loading...' })}
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-6 text-center text-sm text-destructive">
+                    <td colSpan={8} className="px-4 py-6 text-center text-sm text-destructive">
                       {error.message}
                     </td>
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-6 text-center text-sm text-muted-foreground">
                       {t('observations.table.empty', { defaultValue: 'No observations yet.' })}
                     </td>
                   </tr>
@@ -286,15 +297,27 @@ export function ObservationsPage() {
                       </Td>
                       <Td>{formatDateTime(row.deadline)}</Td>
                       <Td className="text-center">
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          aria-label={t('common.edit', { defaultValue: 'Edit' })}
-                          onClick={() => handleOpenDrawer(row)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            aria-label={t('common.edit', { defaultValue: 'Edit' })}
+                            onClick={() => handleOpenDrawer(row)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            aria-label={t('common.delete', { defaultValue: 'Delete' })}
+                            onClick={() => handleDelete(row.id)}
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </Td>
                     </tr>
                   ))

@@ -13,3 +13,7 @@ export async function createMobileUser(data: MobileUserInput) {
 export async function updateMobileUser(id: string, data: MobileUserInput) {
   return apiClient.patch<MobileUser>(ROUTES.MOBILE_USERS.DETAIL(id), data)
 }
+
+export async function deleteMobileUser(id: string) {
+  return apiClient.delete<unknown>(ROUTES.MOBILE_USERS.DETAIL(id))
+}

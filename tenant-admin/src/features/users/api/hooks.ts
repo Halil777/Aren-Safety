@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createMobileUser, fetchMobileUsers, updateMobileUser } from './users'
+import { createMobileUser, deleteMobileUser, fetchMobileUsers, updateMobileUser } from './users'
 import type { MobileUser, MobileUserInput } from '../types/mobile-user'
 
 export function useMobileUsersQuery() {
@@ -29,6 +29,18 @@ export function useUpdateMobileUserMutation() {
     onSuccess: updated => {
       queryClient.setQueryData<MobileUser[]>(['mobile-users'], old =>
         old ? old.map(item => (item.id === updated.id ? updated : item)) : [updated],
+      )
+    },
+  })
+}
+
+export function useDeleteMobileUserMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteMobileUser,
+    onSuccess: (_, id) => {
+      queryClient.setQueryData<MobileUser[]>(['mobile-users'], old =>
+        old ? old.filter(item => item.id !== id) : [],
       )
     },
   })

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   addObservationMedia,
   createObservation,
+  deleteObservation,
   fetchObservations,
   updateObservation,
   type ObservationMediaPayload,
@@ -44,5 +45,17 @@ export function useAddObservationMediaMutation() {
   return useMutation({
     mutationFn: ({ observationId, data }: { observationId: string; data: ObservationMediaPayload }) =>
       addObservationMedia(observationId, data),
+  })
+}
+
+export function useDeleteObservationMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteObservation,
+    onSuccess: (_, id) => {
+      queryClient.setQueryData<Observation[]>(['observations'], old =>
+        old ? old.filter(item => item.id !== id) : [],
+      )
+    },
   })
 }

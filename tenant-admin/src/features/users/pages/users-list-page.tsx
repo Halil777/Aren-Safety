@@ -1,5 +1,5 @@
 import type React from 'react'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -10,11 +10,13 @@ import { useDepartmentsQuery } from '@/features/departments/api/hooks'
 import { useCompaniesQuery } from '@/features/companies/api/hooks'
 import {
   useCreateMobileUserMutation,
+  useDeleteMobileUserMutation,
   useMobileUsersQuery,
   useUpdateMobileUserMutation,
 } from '../api/hooks'
 import {
   useCreateSupervisorMutation,
+  useDeleteSupervisorMutation,
   useSupervisorsQuery,
   useUpdateSupervisorMutation,
 } from '@/features/supervisors/api/hooks'
@@ -29,8 +31,10 @@ export function UsersListPage() {
   const usersQuery = useMobileUsersQuery()
   const supervisorsQuery = useSupervisorsQuery()
   const createUserMutation = useCreateMobileUserMutation()
+  const deleteUserMutation = useDeleteMobileUserMutation()
   const updateUserMutation = useUpdateMobileUserMutation()
   const createSupervisorMutation = useCreateSupervisorMutation()
+  const deleteSupervisorMutation = useDeleteSupervisorMutation()
   const updateSupervisorMutation = useUpdateSupervisorMutation()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -61,8 +65,9 @@ export function UsersListPage() {
     updateUserMutation.isPending ||
     createSupervisorMutation.isPending ||
     updateSupervisorMutation.isPending
+  const isDeleting = deleteUserMutation.isPending || deleteSupervisorMutation.isPending
 
-const handleOpenDrawer = (row?: MobileUser | Supervisor) => {
+  const handleOpenDrawer = (row?: MobileUser | Supervisor) => {
     if (row) {
       setEditingId(row.id)
       setFormState({
@@ -99,6 +104,19 @@ const handleOpenDrawer = (row?: MobileUser | Supervisor) => {
   const handleCloseDrawer = () => {
     setDrawerOpen(false)
     setEditingId(null)
+  }
+
+  const handleDelete = (id: string) => {
+    const confirmed = window.confirm(
+      t('common.confirmDelete', { defaultValue: 'Are you sure you want to delete?' }),
+    )
+    if (!confirmed) return
+
+    if (activeRole === 'USER') {
+      deleteUserMutation.mutate(id)
+    } else {
+      deleteSupervisorMutation.mutate(id)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -194,19 +212,28 @@ const handleOpenDrawer = (row?: MobileUser | Supervisor) => {
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                    <td
+                      colSpan={activeRole === 'SUPERVISOR' ? 7 : 5}
+                      className="px-4 py-6 text-center text-sm text-muted-foreground"
+                    >
                       {t('common.loading', { defaultValue: 'Loading...' })}
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-sm text-destructive">
+                    <td
+                      colSpan={activeRole === 'SUPERVISOR' ? 7 : 5}
+                      className="px-4 py-6 text-center text-sm text-destructive"
+                    >
                       {error.message}
                     </td>
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                    <td
+                      colSpan={activeRole === 'SUPERVISOR' ? 7 : 5}
+                      className="px-4 py-6 text-center text-sm text-muted-foreground"
+                    >
                       {activeRole === 'USER'
                         ? t('users.table.empty', { defaultValue: 'No users yet.' })
                         : t('supervisors.table.empty', { defaultValue: 'No supervisors yet.' })}
@@ -257,15 +284,27 @@ const handleOpenDrawer = (row?: MobileUser | Supervisor) => {
                           : t('common.inactive', { defaultValue: 'Inactive' })}
                       </Td>
                       <Td className="text-center">
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          aria-label={t('common.edit', { defaultValue: 'Edit' })}
-                          onClick={() => handleOpenDrawer(row)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            aria-label={t('common.edit', { defaultValue: 'Edit' })}
+                            onClick={() => handleOpenDrawer(row)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            aria-label={t('common.delete', { defaultValue: 'Delete' })}
+                            onClick={() => handleDelete(row.id)}
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </Td>
                     </tr>
                   ))

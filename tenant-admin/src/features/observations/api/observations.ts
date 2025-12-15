@@ -14,6 +14,10 @@ export async function updateObservation(id: string, data: Partial<ObservationInp
   return apiClient.patch<Observation>(ROUTES.OBSERVATIONS.DETAIL(id), data)
 }
 
+export async function deleteObservation(id: string) {
+  return apiClient.delete<unknown>(ROUTES.OBSERVATIONS.DETAIL(id))
+}
+
 export type ObservationMediaPayload = {
   type: 'IMAGE' | 'VIDEO'
   url: string

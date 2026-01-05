@@ -1,43 +1,78 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# ======================================================
+# Dependencies
+# ======================================================
 node_modules/
 
+# ======================================================
 # Expo
+# ======================================================
 .expo/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# ======================================================
+# React Native / Native build outputs
+# ======================================================
+android/
+ios/
+
+# Android build artifacts
+*.apk
+*.aab
+android/app/build/
+android/build/
+
+# iOS build artifacts
+*.ipa
+*.xcarchive
+
+# ======================================================
+# Native / Security files
+# ======================================================
 .kotlin/
 *.orig.*
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
 *.mobileprovision
+*.pem
 
-# Metro
+# ======================================================
+# Metro / Debug
+# ======================================================
 .metro-health-check*
-
-# debug
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+pnpm-debug.log*
 
-# macOS
+# ======================================================
+# OS junk files
+# ======================================================
 .DS_Store
-*.pem
+Thumbs.db
 
-# local env files
+# ======================================================
+# Environment files
+# ======================================================
+.env
+.env.*
 .env*.local
 
-# typescript
+# ======================================================
+# TypeScript
+# ======================================================
 *.tsbuildinfo
 
-app-example
+# ======================================================
+# Logs
+# ======================================================
+*.log
 
-# generated native folders
-/ios
-/android
+# ======================================================
+# Example / temp apps
+# ======================================================
+app-example

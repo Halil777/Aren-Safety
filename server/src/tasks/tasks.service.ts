@@ -17,7 +17,6 @@ import { MobileAccount } from '../mobile-accounts/mobile-account.entity';
 import { Project } from '../projects/project.entity';
 import { Department } from '../departments/department.entity';
 import { Category } from '../categories/category.entity';
-import { Subcategory } from '../subcategories/subcategory.entity';
 import { CategoryType } from '../categories/category-type';
 import { Company } from '../companies/company.entity';
 import { MobileRole } from '../mobile-accounts/mobile-role';
@@ -37,8 +36,6 @@ export class TasksService {
     private readonly departmentsRepository: Repository<Department>,
     @InjectRepository(Category)
     private readonly categoriesRepository: Repository<Category>,
-    @InjectRepository(Subcategory)
-    private readonly subcategoriesRepository: Repository<Subcategory>,
     @InjectRepository(Company)
     private readonly companiesRepository: Repository<Company>,
   ) {}
@@ -57,9 +54,6 @@ export class TasksService {
     const project = await this.findProject(dto.projectId, tenantId);
     const department = await this.findDepartment(dto.departmentId, tenantId);
     const category = await this.findCategory(dto.categoryId, tenantId);
-    const subcategory = dto.subcategoryId
-      ? await this.findSubcategory(dto.subcategoryId, tenantId, category.id)
-      : null;
 
     const deadline = this.parseDate(dto.deadline, 'deadline');
 
@@ -73,7 +67,6 @@ export class TasksService {
       projectId: project.id,
       departmentId: department.id,
       categoryId: category.id,
-      subcategoryId: subcategory?.id ?? null,
       companyId: company?.id ?? null,
     });
 
@@ -95,14 +88,21 @@ export class TasksService {
     return saved;
   }
 
-  findAllForTenant(tenantId: string) {
+  findAllForTenant(tenantId: string, role?: MobileRole | null, accountId?: string | null) {
+    const where =
+      role === MobileRole.SUPERVISOR && accountId
+        ? [
+            { tenantId, supervisorId: accountId },
+            { tenantId, createdByUserId: accountId },
+          ]
+        : { tenantId };
+
     return this.tasksRepository.find({
-      where: { tenantId },
+      where,
       relations: [
         'project',
         'department',
         'category',
-        'subcategory',
         'company',
         'createdBy',
         'supervisor',
@@ -134,7 +134,6 @@ export class TasksService {
         'project',
         'department',
         'category',
-        'subcategory',
         'company',
         'supervisor',
         'createdBy',
@@ -152,7 +151,6 @@ export class TasksService {
         'project',
         'department',
         'category',
-        'subcategory',
         'company',
         'supervisor',
         'createdBy',
@@ -263,7 +261,6 @@ export class TasksService {
           'project',
           'department',
           'category',
-          'subcategory',
           'company',
           'supervisor',
           'createdBy',
@@ -354,7 +351,6 @@ export class TasksService {
         'project',
         'department',
         'category',
-        'subcategory',
         'company',
         'supervisor',
         'createdBy',
@@ -404,16 +400,6 @@ export class TasksService {
     return category;
   }
 
-  private async findSubcategory(subcategoryId: string, tenantId: string, categoryId: string) {
-    const subcategory = await this.subcategoriesRepository.findOne({
-      where: { id: subcategoryId, tenantId, type: CategoryType.TASK },
-    });
-    if (!subcategory || subcategory.categoryId !== categoryId) {
-      throw new NotFoundException('Task subcategory not found');
-    }
-    return subcategory;
-  }
-
   private parseDate(value: string, field: string) {
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) {
@@ -442,14 +428,12 @@ export class TasksService {
       projectId: task.projectId,
       departmentId: task.departmentId,
       categoryId: task.categoryId,
-      subcategoryId: task.subcategoryId,
       supervisorId: task.supervisorId,
       createdByUserId: task.createdByUserId,
       companyId: task.companyId,
       projectName: task.project?.name,
       departmentName: task.department?.name,
       categoryName: (task.category as any)?.categoryName,
-      subcategoryName: (task.subcategory as any)?.subcategoryName,
       companyName: task.company ? (task.company as any).companyName : null,
       supervisorName: task.supervisor?.fullName,
       createdByName: task.createdBy?.fullName,

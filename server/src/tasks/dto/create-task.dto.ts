@@ -37,10 +37,6 @@ export class CreateTaskDto {
   @IsUUID()
   categoryId: string;
 
-  @IsOptional()
-  @IsUUID()
-  subcategoryId?: string;
-
   @IsUUID()
   supervisorId: string;
 

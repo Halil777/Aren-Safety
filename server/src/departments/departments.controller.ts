@@ -17,25 +17,29 @@ import { UpdateDepartmentDto } from './dto/update-department.dto';
 @UseGuards(AuthGuard('jwt'))
 @Controller('api/departments')
 export class DepartmentsController {
+  private getTenantId(req: any) {
+    return req.user?.tenantId ?? req.user?.userId;
+  }
+
   constructor(private readonly departmentsService: DepartmentsService) {}
 
   @Post()
   create(@Req() req: any, @Body() dto: CreateDepartmentDto) {
-    return this.departmentsService.create(req.user.userId, dto);
+    return this.departmentsService.create(this.getTenantId(req), dto);
   }
 
   @Get()
   findAll(@Req() req: any) {
-    return this.departmentsService.findAllForTenant(req.user.userId);
+    return this.departmentsService.findAllForTenant(this.getTenantId(req));
   }
 
   @Patch(':id')
   update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateDepartmentDto) {
-    return this.departmentsService.update(req.user.userId, id, dto);
+    return this.departmentsService.update(this.getTenantId(req), id, dto);
   }
 
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
-    return this.departmentsService.remove(req.user.userId, id);
+    return this.departmentsService.remove(this.getTenantId(req), id);
   }
 }

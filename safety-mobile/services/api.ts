@@ -181,18 +181,23 @@ export type CreateObservationPayload = {
 };
 
 export async function fetchObservations(token: string, signal?: AbortSignal) {
-  return request<ObservationDto[]>("/mobile/observations", { token, signal });
+  const res = await request<ObservationDto[]>("/mobile/observations", {
+    token,
+    signal,
+  });
+  return res.map(normalizeObservation);
 }
 
 export async function createObservation(
   token: string,
   payload: CreateObservationPayload
 ) {
-  return request<ObservationDto>("/mobile/observations", {
+  const created = await request<ObservationDto>("/mobile/observations", {
     token,
     method: "POST",
     body: payload,
   });
+  return normalizeObservation(created);
 }
 
 export async function fetchObservation(
@@ -200,10 +205,11 @@ export async function fetchObservation(
   id: string,
   signal?: AbortSignal
 ) {
-  return request<ObservationDto>(`/mobile/observations/${id}`, {
+  const res = await request<ObservationDto>(`/mobile/observations/${id}`, {
     token,
     signal,
   });
+  return normalizeObservation(res);
 }
 
 export type LocationDto = {
@@ -224,19 +230,24 @@ export async function answerObservation(
     media?: { url: string; type: "IMAGE" | "VIDEO"; isCorrective?: boolean }[];
   }
 ) {
-  return request<ObservationDto>(`/mobile/observations/${id}/answer`, {
-    token,
-    method: "POST",
-    body: payload,
-  });
+  const updated = await request<ObservationDto>(
+    `/mobile/observations/${id}/answer`,
+    {
+      token,
+      method: "POST",
+      body: payload,
+    }
+  );
+  return normalizeObservation(updated);
 }
 
 export async function closeObservation(token: string, id: string) {
-  return request<ObservationDto>(`/mobile/observations/${id}`, {
+  const updated = await request<ObservationDto>(`/mobile/observations/${id}`, {
     token,
     method: "PATCH",
     body: { status: "CLOSED" },
   });
+  return normalizeObservation(updated);
 }
 
 export async function rejectObservation(
@@ -244,11 +255,12 @@ export async function rejectObservation(
   id: string,
   reason?: string
 ) {
-  return request<ObservationDto>(`/mobile/observations/${id}`, {
+  const updated = await request<ObservationDto>(`/mobile/observations/${id}`, {
     token,
     method: "PATCH",
     body: { status: "REJECTED", rejectionReason: reason },
   });
+  return normalizeObservation(updated);
 }
 
 export type TaskDto = {
@@ -256,7 +268,6 @@ export type TaskDto = {
   projectId: string;
   departmentId: string;
   categoryId: string;
-  subcategoryId?: string | null;
   createdByUserId: string;
   supervisorId: string;
   description: string;
@@ -267,7 +278,6 @@ export type TaskDto = {
   projectName?: string;
   departmentName?: string;
   categoryName?: string;
-  subcategoryName?: string;
   companyName?: string | null;
   supervisorName?: string;
   createdByName?: string;
@@ -285,7 +295,6 @@ export type TaskDto = {
   project?: { id: string; name: string };
   department?: { id: string; name: string };
   category?: { id: string; categoryName?: string; name?: string };
-  subcategory?: { id: string; subcategoryName?: string; name?: string };
   supervisor?: { id: string; fullName?: string };
   createdBy?: { id: string; fullName?: string };
   company?: { id: string; companyName?: string; name?: string } | null;
@@ -306,7 +315,6 @@ export type CreateTaskPayload = {
   projectId: string;
   departmentId: string;
   categoryId: string;
-  subcategoryId?: string;
   media?: TaskMediaInput[];
 };
 
@@ -450,11 +458,48 @@ function normalizeTask(raw: any): TaskDto {
     raw.category?.categoryName ??
     raw.category?.name ??
     undefined;
+  const locationName =
+    raw.locationName ?? raw.location?.name ?? raw.location?.title ?? undefined;
+  const companyName =
+    raw.companyName ??
+    raw.company?.companyName ??
+    raw.company?.name ??
+    undefined;
+  const supervisorName =
+    raw.supervisorName ?? raw.supervisor?.fullName ?? undefined;
+  const createdByName =
+    raw.createdByName ?? raw.createdBy?.fullName ?? undefined;
+
+  return {
+    ...raw,
+    projectName,
+    departmentName,
+    categoryName,
+    locationName,
+    companyName,
+    supervisorName,
+    createdByName,
+  } as TaskDto;
+}
+
+function normalizeObservation(raw: any): ObservationDto {
+  if (!raw || typeof raw !== "object") return raw as ObservationDto;
+
+  const projectName = raw.projectName ?? raw.project?.name ?? undefined;
+  const departmentName =
+    raw.departmentName ?? raw.department?.name ?? undefined;
+  const categoryName =
+    raw.categoryName ??
+    raw.category?.categoryName ??
+    raw.category?.name ??
+    undefined;
   const subcategoryName =
     raw.subcategoryName ??
     raw.subcategory?.subcategoryName ??
     raw.subcategory?.name ??
     undefined;
+  const locationName =
+    raw.locationName ?? raw.location?.name ?? raw.location?.title ?? undefined;
   const companyName =
     raw.companyName ??
     raw.company?.companyName ??
@@ -471,10 +516,11 @@ function normalizeTask(raw: any): TaskDto {
     departmentName,
     categoryName,
     subcategoryName,
+    locationName,
     companyName,
     supervisorName,
     createdByName,
-  } as TaskDto;
+  } as ObservationDto;
 }
 
 export type ProjectDto = {

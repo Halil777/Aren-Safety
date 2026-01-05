@@ -17,16 +17,20 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 @UseGuards(AuthGuard('jwt'))
 @Controller('api/projects')
 export class ProjectsController {
+  private getTenantId(req: any) {
+    return req.user?.tenantId ?? req.user?.userId;
+  }
+
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
   create(@Req() req: any, @Body() createProjectDto: CreateProjectDto) {
-    return this.projectsService.create(req.user.userId, createProjectDto);
+    return this.projectsService.create(this.getTenantId(req), createProjectDto);
   }
 
   @Get()
   findAll(@Req() req: any) {
-    return this.projectsService.findAllForTenant(req.user.userId);
+    return this.projectsService.findAllForTenant(this.getTenantId(req));
   }
 
   @Patch(':id')
@@ -35,11 +39,11 @@ export class ProjectsController {
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
-    return this.projectsService.update(req.user.userId, id, updateProjectDto);
+    return this.projectsService.update(this.getTenantId(req), id, updateProjectDto);
   }
 
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
-    return this.projectsService.remove(req.user.userId, id);
+    return this.projectsService.remove(this.getTenantId(req), id);
   }
 }

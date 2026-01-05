@@ -16,10 +16,55 @@ import { useTheme } from "@/contexts/theme";
 import { useAuth } from "@/contexts/auth";
 import { useTasksQuery } from "@/query/hooks";
 import { TaskDrawer } from "@/components/TaskDrawer";
+import { useLanguage } from "@/contexts/language";
+
+type Language = "en" | "tr" | "ru";
+
+type TasksTexts = {
+  title: string;
+  subtitle: string;
+  create: string;
+  loading: string;
+  noTasks: string;
+  task: string;
+  deadline: string;
+};
+
+const translations: Record<Language, TasksTexts> = {
+  en: {
+    title: "Tasks",
+    subtitle: "Assigned and submitted tasks.",
+    create: "Create",
+    loading: "Loading...",
+    noTasks: "No tasks yet.",
+    task: "Task",
+    deadline: "Deadline",
+  },
+  tr: {
+    title: "Görevler",
+    subtitle: "Atanan ve gönderilen görevler.",
+    create: "Oluştur",
+    loading: "Yükleniyor...",
+    noTasks: "Henüz görev yok.",
+    task: "Görev",
+    deadline: "Son tarih",
+  },
+  ru: {
+    title: "Задачи",
+    subtitle: "Назначенные и отправленные задачи.",
+    create: "Создать",
+    loading: "Загрузка...",
+    noTasks: "Задач пока нет.",
+    task: "Задача",
+    deadline: "Срок",
+  },
+};
 
 export default function TasksScreen() {
   const { colors } = useTheme();
   const { token, user, role } = useAuth();
+  const { language } = useLanguage();
+  const t = translations[language];
   const router = useRouter();
   const tasksQuery = useTasksQuery({ token, scope: user?.id });
   const data = tasksQuery.data ?? [];
@@ -73,15 +118,15 @@ export default function TasksScreen() {
           >
             <View style={{ flex: 1 }}>
               <Text style={{ color: colors.text, fontSize: 22, fontWeight: "800" }}>
-                Tasks
+                {t.title}
               </Text>
               <Text style={{ color: colors.muted }}>
-                Assigned and submitted tasks.
+                {t.subtitle}
               </Text>
             </View>
             {role === "SUPERVISOR" ? (
               <Button
-                label="Create"
+                label={t.create}
                 onPress={() => router.push("/(app)/create-task")}
                 style={{ backgroundColor: colors.primary, borderColor: colors.primary }}
               />
@@ -95,7 +140,7 @@ export default function TasksScreen() {
           </View>
         ) : data.length === 0 ? (
           <View style={{ alignItems: "center", padding: 24 }}>
-            <Text style={{ color: colors.muted }}>No tasks yet.</Text>
+            <Text style={{ color: colors.muted }}>{t.noTasks}</Text>
           </View>
         ) : (
           data.map((item) => (
@@ -116,7 +161,7 @@ export default function TasksScreen() {
                   }}
                 >
                   <Text style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>
-                    {item.categoryName || "Task"}
+                    {item.categoryName || t.task}
                   </Text>
                   <Chip
                     label={String(item.status || "").replace(/_/g, " ")}
@@ -137,7 +182,7 @@ export default function TasksScreen() {
                   ) : null}
                 </View>
                 <Text style={{ color: colors.muted, fontSize: 12 }}>
-                  Deadline: {formatDate(item.deadline)}
+                  {t.deadline}: {formatDate(item.deadline)}
                 </Text>
               </Card>
             </TouchableOpacity>

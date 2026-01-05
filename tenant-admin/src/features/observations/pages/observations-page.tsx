@@ -49,6 +49,7 @@ export function ObservationsPage() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [detailObservation, setDetailObservation] = useState<Observation | null>(null);
   const [formState, setFormState] = useState<ObservationForm>({
     createdByUserId: "",
     supervisorId: "",
@@ -131,6 +132,10 @@ export function ObservationsPage() {
   const handleCloseDrawer = () => {
     setDrawerOpen(false);
     setEditingId(null);
+  };
+
+  const handleCloseDetails = () => {
+    setDetailObservation(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -242,6 +247,9 @@ export function ObservationsPage() {
                     })}
                   </Th>
                   <Th>
+                    {t("observations.table.location", { defaultValue: "Area" })}
+                  </Th>
+                  <Th>
                     {t("observations.table.worker", { defaultValue: "Worker" })}
                   </Th>
                   <Th>
@@ -278,7 +286,7 @@ export function ObservationsPage() {
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="px-4 py-6 text-center text-sm text-muted-foreground"
                     >
                       {t("common.loading", { defaultValue: "Loading..." })}
@@ -287,7 +295,7 @@ export function ObservationsPage() {
                 ) : error ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="px-4 py-6 text-center text-sm text-destructive"
                     >
                       {error.message}
@@ -296,7 +304,7 @@ export function ObservationsPage() {
                 ) : rows.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="px-4 py-6 text-center text-sm text-muted-foreground"
                     >
                       {t("observations.table.empty", {
@@ -306,11 +314,22 @@ export function ObservationsPage() {
                   </tr>
                 ) : (
                   rows.map((row) => (
-                    <tr key={row.id} className="hover:bg-muted/40">
+                    <tr
+                      key={row.id}
+                      className="hover:bg-muted/40 cursor-pointer"
+                      onClick={() => setDetailObservation(row)}
+                    >
                       <Td>
                         {row.project?.name ||
                           projectsQuery.data?.find(
                             (p) => p.id === row.projectId
+                          )?.name ||
+                          t("common.noData", { defaultValue: "N/A" })}
+                      </Td>
+                      <Td>
+                        {row.location?.name ||
+                          locationsQuery.data?.find(
+                            (loc) => loc.id === row.locationId
                           )?.name ||
                           t("common.noData", { defaultValue: "N/A" })}
                       </Td>
@@ -365,7 +384,10 @@ export function ObservationsPage() {
                             aria-label={t("common.edit", {
                               defaultValue: "Edit",
                             })}
-                            onClick={() => handleOpenDrawer(row)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDrawer(row);
+                            }}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -376,7 +398,10 @@ export function ObservationsPage() {
                             aria-label={t("common.delete", {
                               defaultValue: "Delete",
                             })}
-                            onClick={() => handleDelete(row.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(row.id);
+                            }}
                             disabled={isDeleting}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -834,6 +859,131 @@ export function ObservationsPage() {
           </div>
         </div>
       ) : null}
+
+      {detailObservation ? (
+        <div className="fixed inset-0 z-40 flex justify-end">
+          <div className="flex-1 bg-black/40" onClick={handleCloseDetails} />
+          <div className="h-full w-full max-w-md overflow-y-auto bg-background p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {t("observations.drawer.viewTitle", {
+                    defaultValue: "Observation details",
+                  })}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("observations.drawer.viewSubtitle", {
+                    defaultValue: "Full observation information",
+                  })}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={handleCloseDetails}
+              >
+                {t("common.close", { defaultValue: "Close" })}
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              <DetailRow
+                label={t("observations.table.project", { defaultValue: "Project" })}
+                value={
+                  detailObservation.project?.name ||
+                  projectsQuery.data?.find((p) => p.id === detailObservation.projectId)?.name ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("observations.table.location", { defaultValue: "Area" })}
+                value={
+                  detailObservation.location?.name ||
+                  locationsQuery.data?.find((l) => l.id === detailObservation.locationId)?.name ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("observations.form.department", { defaultValue: "Department" })}
+                value={
+                  detailObservation.department?.name ||
+                  departmentsQuery.data?.find((d) => d.id === detailObservation.departmentId)?.name ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("observations.form.category", { defaultValue: "Category" })}
+                value={
+                  detailObservation.category?.categoryName ||
+                  categoriesQuery.data?.find((c) => c.id === detailObservation.categoryId)?.categoryName ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("observations.form.subcategory", { defaultValue: "Subcategory" })}
+                value={
+                  detailObservation.subcategory?.subcategoryName ||
+                  subcategoriesQuery.data?.find((s) => s.id === detailObservation.subcategoryId)?.subcategoryName ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("observations.form.createdBy", { defaultValue: "Issued by" })}
+                value={
+                  detailObservation.createdBy?.fullName ||
+                  supervisorsQuery.data?.find((u) => u.id === detailObservation.createdByUserId)?.fullName ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("observations.form.supervisor", { defaultValue: "Responsible" })}
+                value={
+                  detailObservation.supervisor?.fullName ||
+                  supervisorsQuery.data?.find((s) => s.id === detailObservation.supervisorId)?.fullName ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("observations.table.worker", { defaultValue: "Worker" })}
+                value={detailObservation.workerFullName}
+              />
+              <DetailRow
+                label={t("observations.form.workerProfession", { defaultValue: "Profession" })}
+                value={detailObservation.workerProfession}
+              />
+              <DetailRow
+                label={t("observations.form.riskLevel", { defaultValue: "Risk level" })}
+                value={detailObservation.riskLevel}
+              />
+              <DetailRow
+                label={t("observations.table.company", { defaultValue: "Company" })}
+                value={detailObservation.company?.companyName || t("common.noData", { defaultValue: "N/A" })}
+              />
+              <DetailRow
+                label={t("observations.table.status", { defaultValue: "Status" })}
+                value={detailObservation.status}
+              />
+              <DetailRow
+                label={t("observations.table.deadline", { defaultValue: "Deadline" })}
+                value={formatDateTime(detailObservation.deadline)}
+              />
+              <DetailRow
+                label={t("observations.drawer.createdAt", { defaultValue: "Created at" })}
+                value={formatDateTime(detailObservation.createdAt)}
+              />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("observations.form.description", { defaultValue: "Description" })}
+                </p>
+                <p className="mt-1 whitespace-pre-line text-sm text-foreground">
+                  {detailObservation.description ||
+                    t("common.noData", { defaultValue: "N/A" })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -890,11 +1040,28 @@ const Td = (props: React.TdHTMLAttributes<HTMLTableCellElement>) => (
 );
 
 const formatDateTime = (value?: string) => {
-  if (!value) return "—";
+  if (!value) return "N/A";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "N/A";
   return d.toLocaleString();
 };
+
+const DetailRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | number | null;
+}) => (
+  <div className="flex items-start justify-between gap-4 rounded-md border border-border p-3">
+    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      {label}
+    </div>
+    <div className="text-sm text-foreground text-right">
+      {value !== undefined && value !== null && value !== "" ? value : "N/A"}
+    </div>
+  </div>
+);
 
 const fileToBase64 = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -903,3 +1070,4 @@ const fileToBase64 = (file: File) =>
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+

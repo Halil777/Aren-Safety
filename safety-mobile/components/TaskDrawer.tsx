@@ -451,9 +451,6 @@ export function TaskDrawer({
                   <Text style={{ color: palette.primary, fontSize: 20, fontWeight: "800" }}>
                     {task.categoryName || texts.headerTitle}
                   </Text>
-                  {task.subcategoryName ? (
-                    <Text style={{ color: palette.muted }}>{task.subcategoryName}</Text>
-                  ) : null}
                 </View>
 
                 <View

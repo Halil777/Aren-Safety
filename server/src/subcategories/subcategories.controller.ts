@@ -18,12 +18,16 @@ import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
 @UseGuards(AuthGuard('jwt'))
 @Controller('api')
 export class SubcategoriesController {
+  private getTenantId(req: any) {
+    return req.user?.tenantId ?? req.user?.userId;
+  }
+
   constructor(private readonly subcategoriesService: SubcategoriesService) {}
 
   @Post('observation-subcategories')
   createObservation(@Req() req: any, @Body() dto: CreateSubcategoryDto) {
     return this.subcategoriesService.create(
-      req.user.userId,
+      this.getTenantId(req),
       CategoryType.OBSERVATION,
       dto,
     );
@@ -32,7 +36,7 @@ export class SubcategoriesController {
   @Get('observation-subcategories')
   findObservation(@Req() req: any) {
     return this.subcategoriesService.findAllForTenant(
-      req.user.userId,
+      this.getTenantId(req),
       CategoryType.OBSERVATION,
     );
   }
@@ -44,7 +48,7 @@ export class SubcategoriesController {
     @Body() dto: UpdateSubcategoryDto,
   ) {
     return this.subcategoriesService.update(
-      req.user.userId,
+      this.getTenantId(req),
       id,
       CategoryType.OBSERVATION,
       dto,
@@ -54,7 +58,7 @@ export class SubcategoriesController {
   @Delete('observation-subcategories/:id')
   removeObservation(@Req() req: any, @Param('id') id: string) {
     return this.subcategoriesService.remove(
-      req.user.userId,
+      this.getTenantId(req),
       id,
       CategoryType.OBSERVATION,
     );
@@ -62,13 +66,13 @@ export class SubcategoriesController {
 
   @Post('task-subcategories')
   createTask(@Req() req: any, @Body() dto: CreateSubcategoryDto) {
-    return this.subcategoriesService.create(req.user.userId, CategoryType.TASK, dto);
+    return this.subcategoriesService.create(this.getTenantId(req), CategoryType.TASK, dto);
   }
 
   @Get('task-subcategories')
   findTask(@Req() req: any) {
     return this.subcategoriesService.findAllForTenant(
-      req.user.userId,
+      this.getTenantId(req),
       CategoryType.TASK,
     );
   }
@@ -80,7 +84,7 @@ export class SubcategoriesController {
     @Body() dto: UpdateSubcategoryDto,
   ) {
     return this.subcategoriesService.update(
-      req.user.userId,
+      this.getTenantId(req),
       id,
       CategoryType.TASK,
       dto,
@@ -89,6 +93,6 @@ export class SubcategoriesController {
 
   @Delete('task-subcategories/:id')
   removeTask(@Req() req: any, @Param('id') id: string) {
-    return this.subcategoriesService.remove(req.user.userId, id, CategoryType.TASK);
+    return this.subcategoriesService.remove(this.getTenantId(req), id, CategoryType.TASK);
   }
 }

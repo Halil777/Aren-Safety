@@ -83,6 +83,9 @@ export class MobileAccountsService {
       throw new NotFoundException('Account not found');
     }
 
+    const oldLogin = account.login;
+    const newPassword = dto.password;
+
     if (dto.login && dto.login !== account.login) {
       await this.ensureLoginUnique(dto.login);
       account.login = dto.login;
@@ -114,7 +117,22 @@ export class MobileAccountsService {
       account.projects = await this.findProjects(dto.projectIds, tenantId);
     }
 
-    return this.accountsRepository.save(account);
+    const saved = await this.accountsRepository.save(account);
+
+    const loginChanged = dto.login !== undefined && dto.login !== oldLogin;
+    const passwordChanged = Boolean(newPassword);
+    if (saved.email && (loginChanged || passwordChanged)) {
+      await this.mailService.sendMobileAccountUpdate({
+        to: saved.email,
+        fullName: saved.fullName,
+        login: saved.login,
+        password: passwordChanged ? newPassword : undefined,
+        loginChanged,
+        passwordChanged,
+      });
+    }
+
+    return saved;
   }
 
   private async ensureLoginUnique(login: string) {

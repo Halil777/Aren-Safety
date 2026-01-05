@@ -17,25 +17,29 @@ import { UpdateLocationDto } from './dto/update-location.dto';
 @UseGuards(AuthGuard('jwt'))
 @Controller('api/locations')
 export class LocationsController {
+  private getTenantId(req: any) {
+    return req.user?.tenantId ?? req.user?.userId;
+  }
+
   constructor(private readonly locationsService: LocationsService) {}
 
   @Post()
   create(@Req() req: any, @Body() dto: CreateLocationDto) {
-    return this.locationsService.create(req.user.userId, dto);
+    return this.locationsService.create(this.getTenantId(req), dto);
   }
 
   @Get()
   findAll(@Req() req: any) {
-    return this.locationsService.findAllForTenant(req.user.userId);
+    return this.locationsService.findAllForTenant(this.getTenantId(req));
   }
 
   @Patch(':id')
   update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateLocationDto) {
-    return this.locationsService.update(req.user.userId, id, dto);
+    return this.locationsService.update(this.getTenantId(req), id, dto);
   }
 
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
-    return this.locationsService.remove(req.user.userId, id);
+    return this.locationsService.remove(this.getTenantId(req), id);
   }
 }

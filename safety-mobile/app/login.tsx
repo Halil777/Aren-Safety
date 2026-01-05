@@ -1,13 +1,5 @@
 import { useState, type ReactNode } from "react";
-import {
-  Text,
-  View,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-  Image,
-} from "react-native";
+import { Text, View, TouchableOpacity, Alert, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/auth";
 import { useTheme } from "../contexts/theme";
@@ -97,154 +89,147 @@ export default function LoginScreen() {
   };
 
   return (
-    <Screen padded={false}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1, backgroundColor: colors.background }}
-      >
-        <SnowBackground count={60} opacity={mode === "dark" ? 0.16 : 0.12} />
-        <View
-          style={{ flex: 1, paddingHorizontal: 24, paddingTop: 80, gap: 32 }}
-        >
-          <View style={{ alignItems: "center" }}>
-            <Image
-              source={require("../assets/logo/logo.png")}
-              style={{ width: "100%", height: 200 }}
-              resizeMode="contain"
-            />
-          </View>
+    <Screen padded={false} scrollable keyboardOffset={60}>
+      <SnowBackground count={60} opacity={mode === "dark" ? 0.16 : 0.12} />
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 80, gap: 32 }}>
+        <View style={{ alignItems: "center" }}>
+          <Image
+            source={require("../assets/logo/logo.png")}
+            style={{ width: "100%", height: 200 }}
+            resizeMode="contain"
+          />
+        </View>
 
-          <View style={{ gap: 18 }}>
-            <Text
+        <View style={{ gap: 18 }}>
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 22,
+              fontWeight: "700",
+              textAlign: "center",
+              textTransform: "uppercase",
+            }}
+          >
+            {t.title}
+          </Text>
+
+          <View style={{ gap: 12 }}>
+            <LinedInput
+              icon="person-outline"
+              placeholder={t.loginPlaceholder}
+              value={form.login}
+              onChangeText={(loginVal) =>
+                setForm((s) => ({ ...s, login: loginVal }))
+              }
+            />
+            <LinedInput
+              icon="lock-closed-outline"
+              placeholder={t.passwordPlaceholder}
+              secureTextEntry={!showPassword}
+              value={form.password}
+              onChangeText={(password) =>
+                setForm((s) => ({ ...s, password }))
+              }
+              accessory={
+                <TouchableOpacity onPress={() => setShowPassword((p) => !p)}>
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={18}
+                    color={iconColor}
+                  />
+                </TouchableOpacity>
+              }
+            />
+            <View
               style={{
-                color: colors.text,
-                fontSize: 22,
-                fontWeight: "700",
-                textAlign: "center",
-                textTransform: "uppercase",
+                flexDirection: "row",
+                alignItems: "flex-end",
+                gap: 12,
               }}
             >
-              {t.title}
-            </Text>
-
-            <View style={{ gap: 12 }}>
-              <LinedInput
-                icon="person-outline"
-                placeholder={t.loginPlaceholder}
-                value={form.login}
-                onChangeText={(loginVal) =>
-                  setForm((s) => ({ ...s, login: loginVal }))
-                }
-              />
-              <LinedInput
-                icon="lock-closed-outline"
-                placeholder={t.passwordPlaceholder}
-                secureTextEntry={!showPassword}
-                value={form.password}
-                onChangeText={(password) =>
-                  setForm((s) => ({ ...s, password }))
-                }
-                accessory={
-                  <TouchableOpacity onPress={() => setShowPassword((p) => !p)}>
-                    <Ionicons
-                      name={showPassword ? "eye-off-outline" : "eye-outline"}
-                      size={18}
-                      color={iconColor}
-                    />
-                  </TouchableOpacity>
-                }
-              />
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "flex-end",
-                  gap: 12,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Select
-                    label={t.languageLabel}
-                    placeholder={t.languagePlaceholder}
-                    value={language}
-                    onValueChange={(value) => setLanguage(value as Language)}
-                    options={[
-                      { label: "English", value: "en" },
-                      { label: "Turkish", value: "tr" },
-                      { label: "Russian", value: "ru" },
-                    ]}
-                  />
-                </View>
-                <View style={{ gap: 6, alignItems: "center" }}>
-                  <Text
+              <View style={{ flex: 1 }}>
+                <Select
+                  label={t.languageLabel}
+                  placeholder={t.languagePlaceholder}
+                  value={language}
+                  onValueChange={(value) => setLanguage(value as Language)}
+                  options={[
+                    { label: "English", value: "en" },
+                    { label: "Turkish", value: "tr" },
+                    { label: "Russian", value: "ru" },
+                  ]}
+                />
+              </View>
+              <View style={{ gap: 6, alignItems: "center" }}>
+                <Text
+                  style={{
+                    color: colors.muted,
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                >
+                  {t.themeLabel}
+                </Text>
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  <TouchableOpacity
+                    onPress={() => setMode("light")}
                     style={{
-                      color: colors.muted,
-                      fontSize: 12,
-                      fontWeight: "700",
+                      width: 40,
+                      height: 40,
+                      borderRadius: 12,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor:
+                        mode === "light" ? primaryColor : panelColor,
+                      borderWidth: 1,
+                      borderColor:
+                        mode === "light" ? primaryColor : borderColor,
                     }}
                   >
-                    {t.themeLabel}
-                  </Text>
-                  <View style={{ flexDirection: "row", gap: 8 }}>
-                    <TouchableOpacity
-                      onPress={() => setMode("light")}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 12,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor:
-                          mode === "light" ? primaryColor : panelColor,
-                        borderWidth: 1,
-                        borderColor:
-                          mode === "light" ? primaryColor : borderColor,
-                      }}
-                    >
-                      <Ionicons
-                        name="sunny"
-                        size={20}
-                        color={mode === "light" ? colors.background : iconColor}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => setMode("dark")}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 12,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor:
-                          mode === "dark" ? primaryColor : panelColor,
-                        borderWidth: 1,
-                        borderColor:
-                          mode === "dark" ? primaryColor : borderColor,
-                      }}
-                    >
-                      <Ionicons
-                        name="moon"
-                        size={20}
-                        color={mode === "dark" ? colors.background : iconColor}
-                      />
-                    </TouchableOpacity>
-                  </View>
+                    <Ionicons
+                      name="sunny"
+                      size={20}
+                      color={mode === "light" ? colors.background : iconColor}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setMode("dark")}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 12,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor:
+                        mode === "dark" ? primaryColor : panelColor,
+                      borderWidth: 1,
+                      borderColor:
+                        mode === "dark" ? primaryColor : borderColor,
+                    }}
+                  >
+                    <Ionicons
+                      name="moon"
+                      size={20}
+                      color={mode === "dark" ? colors.background : iconColor}
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
-              <Button
-                label={t.button}
-                onPress={submit}
-                loading={loading}
-                fullWidth
-                style={{
-                  backgroundColor: primaryColor,
-                  borderColor: primaryColor,
-                  marginTop: 6,
-                }}
-              />
             </View>
+            <Button
+              label={t.button}
+              onPress={submit}
+              loading={loading}
+              fullWidth
+              style={{
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
+                marginTop: 6,
+              }}
+            />
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Screen>
   );
 }

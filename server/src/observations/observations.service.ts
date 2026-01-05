@@ -101,9 +101,17 @@ export class ObservationsService {
     return saved;
   }
 
-  findAllForTenant(tenantId: string) {
+  findAllForTenant(tenantId: string, role?: MobileRole | null, accountId?: string | null) {
+    const where =
+      role === MobileRole.SUPERVISOR && accountId
+        ? [
+            { tenantId, supervisorId: accountId },
+            { tenantId, createdByUserId: accountId },
+          ]
+        : { tenantId };
+
     return this.observationsRepository.find({
-      where: { tenantId },
+      where,
       relations: [
         'project',
         'location',

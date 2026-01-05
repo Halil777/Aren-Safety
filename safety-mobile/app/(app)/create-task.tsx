@@ -13,13 +13,13 @@ import { Card } from "../../components/ui/Card";
 import { Select } from "../../components/ui/Select";
 import { useTheme } from "../../contexts/theme";
 import { useAuth } from "../../contexts/auth";
+import { useLanguage } from "../../contexts/language";
 import {
   useCategoriesQuery,
   useCreateTaskMutation,
   useDepartmentsQuery,
   useLocationsQuery,
   useProjectsQuery,
-  useSubcategoriesQuery,
   useSupervisorsQuery,
 } from "../../query/hooks";
 
@@ -33,10 +33,194 @@ type Attachment = {
 const ensureDataUri = (value: string, mime: string) =>
   value.startsWith("data:") ? value : `data:${mime};base64,${value}`;
 
+type Language = "en" | "tr" | "ru";
+
+type CreateTaskTexts = {
+  title: string;
+  subtitle: string;
+  loading: string;
+  supervisorOnly: string;
+  errorTitle: string;
+  loginAgain: string;
+  requiredFields: string;
+  enterDescription: string;
+  permissionTitle: string;
+  permissionBody: string;
+  videoReadError: string;
+  fileReadError: string;
+  doneTitle: string;
+  taskCreated: string;
+  creationFailed: string;
+  couldNotCreate: string;
+  project: string;
+  projectPlaceholder: string;
+  department: string;
+  departmentPlaceholder: string;
+  location: string;
+  locationOptional: string;
+  locationPlaceholder: string;
+  selectProjectFirst: string;
+  supervisor: string;
+  supervisorPlaceholder: string;
+  category: string;
+  categoryPlaceholder: string;
+  description: string;
+  descriptionPlaceholder: string;
+  attachments: string;
+  image: string;
+  imageCamera: string;
+  video: string;
+  videoCamera: string;
+  file: string;
+  noAttachments: string;
+  deadline: string;
+  date: string;
+  time: string;
+  submit: string;
+  submitting: string;
+};
+
+const translations: Record<Language, CreateTaskTexts> = {
+  en: {
+    title: "Create task",
+    subtitle: "Send a new task to another supervisor",
+    loading: "Loading...",
+    supervisorOnly: "Only supervisors can create tasks.",
+    errorTitle: "Error",
+    loginAgain: "Please log in again",
+    requiredFields: "Fill in the required fields",
+    enterDescription: "Enter a description",
+    permissionTitle: "Permission needed",
+    permissionBody: "Allow media access to attach files.",
+    videoReadError: "Could not read video",
+    fileReadError: "Could not read file",
+    doneTitle: "Done",
+    taskCreated: "Task created",
+    creationFailed: "Creation failed",
+    couldNotCreate: "Could not create task",
+    project: "Project",
+    projectPlaceholder: "Select project",
+    department: "Department",
+    departmentPlaceholder: "Select department",
+    location: "Area",
+    locationOptional: "Area (optional)",
+    locationPlaceholder: "Select area",
+    selectProjectFirst: "Select project first",
+    supervisor: "Responsible",
+    supervisorPlaceholder: "Select responsible",
+    category: "Category",
+    categoryPlaceholder: "Select category",
+    description: "Description",
+    descriptionPlaceholder: "Describe the task",
+    attachments: "Attachments",
+    image: "Image from gallery",
+    imageCamera: "Image from camera",
+    video: "Video from gallery",
+    videoCamera: "Video from camera",
+    file: "File",
+    noAttachments: "No attachments",
+    deadline: "Deadline",
+    date: "Date",
+    time: "Time",
+    submit: "Submit task",
+    submitting: "Submitting...",
+  },
+  tr: {
+    title: "Görev oluştur",
+    subtitle: "Başka bir sorumluya yeni görev gönder",
+    loading: "Yükleniyor...",
+    supervisorOnly: "Sadece sorumlular görev oluşturabilir.",
+    errorTitle: "Hata",
+    loginAgain: "Lütfen tekrar giriş yapın",
+    requiredFields: "Zorunlu alanları doldurun",
+    enterDescription: "Açıklama girin",
+    permissionTitle: "İzin gerekli",
+    permissionBody: "Dosya eklemek için medya erişimine izin verin.",
+    videoReadError: "Video okunamadı",
+    fileReadError: "Dosya okunamadı",
+    doneTitle: "Tamam",
+    taskCreated: "Görev oluşturuldu",
+    creationFailed: "Oluşturma hatası",
+    couldNotCreate: "Görev oluşturulamadı",
+    project: "Proje",
+    projectPlaceholder: "Proje seçin",
+    department: "Departman",
+    departmentPlaceholder: "Departman seçin",
+    location: "Alan",
+    locationOptional: "Alan (opsiyonel)",
+    locationPlaceholder: "Alan seçin",
+    selectProjectFirst: "Önce proje seçin",
+    supervisor: "Sorumlu",
+    supervisorPlaceholder: "Sorumlu seçin",
+    category: "Kategori",
+    categoryPlaceholder: "Kategori seçin",
+    description: "Açıklama",
+    descriptionPlaceholder: "Görevi açıklayın",
+    attachments: "Ekler",
+    image: "Galeriden görsel",
+    imageCamera: "Kameradan görsel",
+    video: "Galeriden video",
+    videoCamera: "Kameradan video",
+    file: "Dosya",
+    noAttachments: "Ek yok",
+    deadline: "Bitiş tarihi",
+    date: "Tarih",
+    time: "Saat",
+    submit: "Görevi gönder",
+    submitting: "Gönderiliyor...",
+  },
+  ru: {
+    title: "Создать задачу",
+    subtitle: "Отправить новую задачу другому руководителю",
+    loading: "Загрузка...",
+    supervisorOnly: "Только руководители могут создавать задачи.",
+    errorTitle: "Ошибка",
+    loginAgain: "Пожалуйста, войдите снова",
+    requiredFields: "Заполните обязательные поля",
+    enterDescription: "Введите описание",
+    permissionTitle: "Требуется разрешение",
+    permissionBody: "Разрешите доступ к медиафайлам для вложений.",
+    videoReadError: "Не удалось прочитать видео",
+    fileReadError: "Не удалось прочитать файл",
+    doneTitle: "Готово",
+    taskCreated: "Задача создана",
+    creationFailed: "Ошибка создания",
+    couldNotCreate: "Не удалось создать задачу",
+    project: "Проект",
+    projectPlaceholder: "Выберите проект",
+    department: "Отдел",
+    departmentPlaceholder: "Выберите отдел",
+    location: "Зона",
+    locationOptional: "Зона (необязательно)",
+    locationPlaceholder: "Выберите зону",
+    selectProjectFirst: "Сначала выберите проект",
+    supervisor: "Ответственный",
+    supervisorPlaceholder: "Выберите ответственного",
+    category: "Категория",
+    categoryPlaceholder: "Выберите категорию",
+    description: "Описание",
+    descriptionPlaceholder: "Опишите задачу",
+    attachments: "Вложения",
+    image: "Фото из галереи",
+    imageCamera: "Фото с камеры",
+    video: "Видео из галереи",
+    videoCamera: "Видео с камеры",
+    file: "Файл",
+    noAttachments: "Нет вложений",
+    deadline: "Срок",
+    date: "Дата",
+    time: "Время",
+    submit: "Отправить задачу",
+    submitting: "Отправка...",
+  },
+};
+
 export default function CreateTaskScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { token, user, role } = useAuth();
+  const { language } = useLanguage();
+  const t = translations[language];
 
   const [formState, setFormState] = useState({
     projectId: "",
@@ -44,7 +228,6 @@ export default function CreateTaskScreen() {
     locationId: "",
     supervisorId: "",
     categoryId: "",
-    subcategoryId: "",
     description: "",
   });
 
@@ -53,12 +236,6 @@ export default function CreateTaskScreen() {
   const locationsQuery = useLocationsQuery({ token, scope: user?.id });
   const supervisorsQuery = useSupervisorsQuery({ token, scope: user?.id });
   const categoriesQuery = useCategoriesQuery({ token, scope: user?.id, type: "task" });
-  const subcategoriesQuery = useSubcategoriesQuery({
-    token,
-    scope: user?.id,
-    categoryId: formState.categoryId || undefined,
-    type: "task",
-  });
 
   const createTaskMutation = useCreateTaskMutation({ token, scope: user?.id });
 
@@ -94,7 +271,7 @@ export default function CreateTaskScreen() {
   const pickImage = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert("Permission needed", "Allow media access to attach files.");
+      Alert.alert(t.permissionTitle, t.permissionBody);
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -118,10 +295,37 @@ export default function CreateTaskScreen() {
     ]);
   };
 
+  const pickImageCamera = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(t.permissionTitle, t.permissionBody);
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+      base64: true,
+    });
+    if (result.canceled) return;
+    const asset = result.assets?.[0];
+    if (!asset?.uri) return;
+    const base64 = asset.base64 ?? undefined;
+    if (!base64) return;
+    setAttachments((prev) => [
+      ...prev,
+      {
+        uri: asset.uri,
+        type: "IMAGE",
+        base64,
+        mime: asset.mimeType ?? "image/jpeg",
+      },
+    ]);
+  };
+
   const pickVideo = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert("Permission needed", "Allow media access to attach files.");
+      Alert.alert(t.permissionTitle, t.permissionBody);
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -144,7 +348,37 @@ export default function CreateTaskScreen() {
       ]);
     } catch (err) {
       console.warn("pickVideo failed:", err);
-      Alert.alert("Error", "Could not read video");
+      Alert.alert(t.errorTitle, t.videoReadError);
+    }
+  };
+
+  const pickVideoCamera = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(t.permissionTitle, t.permissionBody);
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+    const asset = result.assets?.[0];
+    if (!asset?.uri) return;
+    try {
+      const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: "base64" });
+      setAttachments((prev) => [
+        ...prev,
+        {
+          uri: asset.uri,
+          type: "VIDEO",
+          base64,
+          mime: asset.mimeType ?? "video/mp4",
+        },
+      ]);
+    } catch (err) {
+      console.warn("pickVideoCamera failed:", err);
+      Alert.alert(t.errorTitle, t.videoReadError);
     }
   };
 
@@ -170,25 +404,25 @@ export default function CreateTaskScreen() {
       ]);
     } catch (err) {
       console.warn("pickFile failed:", err);
-      Alert.alert("Error", "Could not read file");
+      Alert.alert(t.errorTitle, t.fileReadError);
     }
   };
 
   const submit = async () => {
     if (!token || !user) {
-      Alert.alert("Error", "Please log in again");
+      Alert.alert(t.errorTitle, t.loginAgain);
       return;
     }
     if (role !== "SUPERVISOR") {
-      Alert.alert("Error", "Only supervisors can create tasks.");
+      Alert.alert(t.errorTitle, t.supervisorOnly);
       return;
     }
     if (!formState.projectId || !formState.departmentId || !formState.categoryId || !formState.supervisorId) {
-      Alert.alert("Error", "Fill in the required fields");
+      Alert.alert(t.errorTitle, t.requiredFields);
       return;
     }
     if (!formState.description.trim()) {
-      Alert.alert("Error", "Enter a description");
+      Alert.alert(t.errorTitle, t.enterDescription);
       return;
     }
 
@@ -209,25 +443,36 @@ export default function CreateTaskScreen() {
         projectId: formState.projectId,
         departmentId: formState.departmentId,
         categoryId: formState.categoryId,
-        ...(formState.subcategoryId ? { subcategoryId: formState.subcategoryId } : {}),
         supervisorId: formState.supervisorId,
         description: formState.description,
         deadline: deadline.toISOString(),
         status: "NEW",
         ...(media.length ? { media } : {}),
       });
-      Alert.alert("Done", "Task created");
+      Alert.alert(t.doneTitle, t.taskCreated);
+      setFormState({
+        projectId: "",
+        departmentId: "",
+        locationId: "",
+        supervisorId: "",
+        categoryId: "",
+        description: "",
+      });
+      const next = new Date();
+      next.setHours(next.getHours() + 24);
+      setDeadline(next);
+      setAttachments([]);
       router.push("/(app)/tasks");
     } catch (err) {
       console.error("createTask failed:", err);
-      Alert.alert("Creation failed", err instanceof Error ? err.message : "Could not create task");
+      Alert.alert(t.creationFailed, err instanceof Error ? err.message : t.couldNotCreate);
     }
   };
 
   if (loading) {
     return (
       <Screen>
-        <Text style={{ color: colors.muted }}>Loading...</Text>
+        <Text style={{ color: colors.muted }}>{t.loading}</Text>
       </Screen>
     );
   }
@@ -236,88 +481,80 @@ export default function CreateTaskScreen() {
     <Screen scrollable>
       <View style={{ gap: 14 }}>
         <View style={{ gap: 2 }}>
-          <Text style={{ color: colors.text, fontSize: 22, fontWeight: "800" }}>Create task</Text>
-          <Text style={{ color: colors.muted }}>Send a new task to another supervisor</Text>
+          <Text style={{ color: colors.text, fontSize: 22, fontWeight: "800" }}>{t.title}</Text>
+          <Text style={{ color: colors.muted }}>{t.subtitle}</Text>
         </View>
 
         <Card style={{ gap: 12 }}>
           <Select
-            label="Project *"
+            label={`${t.project} *`}
             value={formState.projectId}
-            placeholder="Select project"
-            options={(projectsQuery.data ?? []).map((p) => ({ value: p.id, label: p.name }))}
-            onValueChange={(v) =>
-              setFormState((s) => ({
-                ...s,
-                projectId: v,
-                departmentId: "",
-                locationId: "",
-                categoryId: "",
-                subcategoryId: "",
-              }))
-            }
-          />
+            placeholder={t.projectPlaceholder}
+          options={(projectsQuery.data ?? []).map((p) => ({ value: p.id, label: p.name }))}
+          onValueChange={(v) =>
+            setFormState((s) => ({
+              ...s,
+              projectId: v,
+              departmentId: "",
+              locationId: "",
+              categoryId: "",
+            }))
+          }
+        />
 
           <Select
-            label="Department *"
+            label={`${t.department} *`}
             value={formState.departmentId}
-            placeholder="Select department"
+            placeholder={t.departmentPlaceholder}
             options={(departmentsQuery.data ?? []).map((d) => ({ value: d.id, label: d.name }))}
             onValueChange={(v) => setFormState((s) => ({ ...s, departmentId: v }))}
           />
 
           <Select
-            label="Location (optional)"
+            label={t.locationOptional}
             value={formState.locationId}
-            placeholder={formState.projectId ? "Select location" : "Select project first"}
+            placeholder={formState.projectId ? t.locationPlaceholder : t.selectProjectFirst}
             options={availableLocations.map((l) => ({ value: l.id, label: l.name }))}
             onValueChange={(v) => setFormState((s) => ({ ...s, locationId: v }))}
             disabled={!formState.projectId}
           />
 
           <Select
-            label="Supervisor *"
+            label={`${t.supervisor} *`}
             value={formState.supervisorId}
-            placeholder="Select supervisor"
+            placeholder={t.supervisorPlaceholder}
             options={selectableSupervisors.map((s) => ({ value: s.id, label: s.fullName }))}
             onValueChange={(v) => setFormState((s) => ({ ...s, supervisorId: v }))}
           />
 
           <Select
-            label="Category *"
+            label={`${t.category} *`}
             value={formState.categoryId}
-            placeholder="Select category"
+            placeholder={t.categoryPlaceholder}
             options={(categoriesQuery.data ?? []).map((c) => ({ value: c.id, label: c.name }))}
-            onValueChange={(v) => setFormState((s) => ({ ...s, categoryId: v, subcategoryId: "" }))}
-          />
-
-          <Select
-            label="Subcategory (optional)"
-            value={formState.subcategoryId}
-            placeholder={formState.categoryId ? "Select subcategory" : "Choose a category first"}
-            options={(subcategoriesQuery.data ?? []).map((sc) => ({ value: sc.id, label: sc.name }))}
-            onValueChange={(v) => setFormState((s) => ({ ...s, subcategoryId: v }))}
-            disabled={!formState.categoryId}
+            onValueChange={(v) => setFormState((s) => ({ ...s, categoryId: v }))}
           />
         </Card>
 
         <Card style={{ gap: 12 }}>
           <Input
-            label="Description *"
+            label={`${t.description} *`}
             value={formState.description}
             onChangeText={(v) => setFormState((s) => ({ ...s, description: v }))}
-            placeholder="Describe the task"
+            placeholder={t.descriptionPlaceholder}
             multiline
             style={{ minHeight: 120, textAlignVertical: "top" as any }}
           />
         </Card>
 
         <Card style={{ gap: 12 }}>
-          <Text style={{ color: colors.text, fontWeight: "800", fontSize: 16 }}>Attachments</Text>
+          <Text style={{ color: colors.text, fontWeight: "800", fontSize: 16 }}>{t.attachments}</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-            <PickButton label="Image" icon="image-outline" onPress={pickImage} />
-            <PickButton label="Video" icon="videocam-outline" onPress={pickVideo} />
-            <PickButton label="File" icon="document-outline" onPress={pickFile} />
+            <PickButton label={t.image} icon="image-outline" onPress={pickImage} />
+            <PickButton label={t.imageCamera} icon="camera-outline" onPress={pickImageCamera} />
+            <PickButton label={t.video} icon="videocam-outline" onPress={pickVideo} />
+            <PickButton label={t.videoCamera} icon="videocam-outline" onPress={pickVideoCamera} />
+            <PickButton label={t.file} icon="document-outline" onPress={pickFile} />
           </View>
 
           {attachments.length ? (
@@ -348,22 +585,22 @@ export default function CreateTaskScreen() {
               ))}
             </View>
           ) : (
-            <Text style={{ color: colors.muted }}>No attachments</Text>
+            <Text style={{ color: colors.muted }}>{t.noAttachments}</Text>
           )}
         </Card>
 
         <Card style={{ gap: 10 }}>
-          <Text style={{ color: colors.text, fontWeight: "800", fontSize: 16 }}>Deadline</Text>
+          <Text style={{ color: colors.text, fontWeight: "800", fontSize: 16 }}>{t.deadline}</Text>
           <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
             <Button
-              label={`Date: ${deadline.toISOString().slice(0, 10)}`}
+              label={`${t.date}: ${deadline.toISOString().slice(0, 10)}`}
               onPress={() => setShowDate(true)}
               variant="ghost"
               borderColor={colors.subtle}
               textColor={colors.text}
             />
             <Button
-              label={`Time: ${deadline.toTimeString().slice(0, 5)}`}
+              label={`${t.time}: ${deadline.toTimeString().slice(0, 5)}`}
               onPress={() => setShowTime(true)}
               variant="ghost"
               borderColor={colors.subtle}
@@ -403,7 +640,7 @@ export default function CreateTaskScreen() {
         </Card>
 
         <Button
-          label={createTaskMutation.isPending ? "Submitting..." : "Submit task"}
+          label={createTaskMutation.isPending ? t.submitting : t.submit}
           fullWidth
           onPress={submit}
           loading={createTaskMutation.isPending}

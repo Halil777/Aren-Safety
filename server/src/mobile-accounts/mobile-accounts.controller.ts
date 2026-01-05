@@ -18,11 +18,15 @@ import { MobileRole } from './mobile-role';
 @UseGuards(AuthGuard('jwt'))
 @Controller('api')
 export class MobileAccountsController {
+  private getTenantId(req: any) {
+    return req.user?.tenantId ?? req.user?.userId;
+  }
+
   constructor(private readonly accountsService: MobileAccountsService) {}
 
   @Post('supervisors')
   createSupervisor(@Req() req: any, @Body() dto: CreateMobileAccountDto) {
-    return this.accountsService.create(req.user.userId, {
+    return this.accountsService.create(this.getTenantId(req), {
       ...dto,
       role: MobileRole.SUPERVISOR,
     });
@@ -30,7 +34,7 @@ export class MobileAccountsController {
 
   @Get('supervisors')
   listSupervisors(@Req() req: any) {
-    return this.accountsService.findAll(req.user.userId, MobileRole.SUPERVISOR);
+    return this.accountsService.findAll(this.getTenantId(req), MobileRole.SUPERVISOR);
   }
 
   @Patch('supervisors/:id')
@@ -39,7 +43,7 @@ export class MobileAccountsController {
     @Param('id') id: string,
     @Body() dto: UpdateMobileAccountDto,
   ) {
-    return this.accountsService.update(req.user.userId, id, {
+    return this.accountsService.update(this.getTenantId(req), id, {
       ...dto,
       role: MobileRole.SUPERVISOR,
     });
@@ -47,6 +51,6 @@ export class MobileAccountsController {
 
   @Delete('supervisors/:id')
   removeSupervisor(@Req() req: any, @Param('id') id: string) {
-    return this.accountsService.remove(req.user.userId, id, MobileRole.SUPERVISOR);
+    return this.accountsService.remove(this.getTenantId(req), id, MobileRole.SUPERVISOR);
   }
 }

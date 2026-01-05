@@ -160,6 +160,43 @@ Aren Safety Company`;
     });
   }
 
+  async sendMobileAccountUpdate(payload: {
+    to: string;
+    fullName?: string;
+    login: string;
+    password?: string;
+    loginChanged?: boolean;
+    passwordChanged?: boolean;
+  }) {
+    const { to, fullName, login, password, loginChanged, passwordChanged } = payload;
+    if (!to) {
+      this.logger.warn('No recipient provided for mobile account update email');
+      return;
+    }
+
+    const name = fullName || 'user';
+    const subject = 'Your Aren Safety mobile account was updated';
+    const lines = [
+      `Hello ${name},`,
+      '',
+      'Your Aren Safety mobile account details have been updated.',
+      loginChanged ? `New login: ${login}` : undefined,
+      passwordChanged && password ? `New password: ${password}` : undefined,
+      '',
+      'If you did not request this change, please contact support immediately.',
+      '',
+      'Best regards,',
+      'Aren Safety Team',
+    ].filter(Boolean);
+
+    await this.sendMail({
+      from: this.from,
+      to,
+      subject,
+      text: lines.join('\n'),
+    });
+  }
+
   private async sendMail(options: nodemailer.SendMailOptions) {
     try {
       await this.transporter.sendMail(options);

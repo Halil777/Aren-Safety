@@ -17,25 +17,29 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 @UseGuards(AuthGuard('jwt'))
 @Controller('api/companies')
 export class CompaniesController {
+  private getTenantId(req: any) {
+    return req.user?.tenantId ?? req.user?.userId;
+  }
+
   constructor(private readonly companiesService: CompaniesService) {}
 
   @Post()
   create(@Req() req: any, @Body() dto: CreateCompanyDto) {
-    return this.companiesService.create(req.user.userId, dto);
+    return this.companiesService.create(this.getTenantId(req), dto);
   }
 
   @Get()
   findAll(@Req() req: any) {
-    return this.companiesService.findAllForTenant(req.user.userId);
+    return this.companiesService.findAllForTenant(this.getTenantId(req));
   }
 
   @Patch(':id')
   update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateCompanyDto) {
-    return this.companiesService.update(req.user.userId, id, dto);
+    return this.companiesService.update(this.getTenantId(req), id, dto);
   }
 
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
-    return this.companiesService.remove(req.user.userId, id);
+    return this.companiesService.remove(this.getTenantId(req), id);
   }
 }

@@ -1,140 +1,144 @@
-import type React from 'react'
-import { ListChecks, Pencil, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Card, CardContent } from '@/shared/ui/card'
-import { Button } from '@/shared/ui/button'
-import { PageHeader } from '@/shared/ui/page-header'
-import { useProjectsQuery } from '@/features/projects/api/hooks'
-import { useDepartmentsQuery } from '@/features/departments/api/hooks'
-import { useCategoriesQuery } from '@/features/categories/api/hooks'
-import { useSubcategoriesQuery } from '@/features/subcategories/api/hooks'
-import { useSupervisorsQuery } from '@/features/supervisors/api/hooks'
-import { useLocationsQuery } from '@/features/locations/api/hooks'
+import type React from "react";
+import { ListChecks, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { PageHeader } from "@/shared/ui/page-header";
+import { useProjectsQuery } from "@/features/projects/api/hooks";
+import { useDepartmentsQuery } from "@/features/departments/api/hooks";
+import { useCategoriesQuery } from "@/features/categories/api/hooks";
+import { useSupervisorsQuery } from "@/features/supervisors/api/hooks";
+import { useLocationsQuery } from "@/features/locations/api/hooks";
 import {
   useAddTaskMediaMutation,
   useCreateTaskMutation,
   useDeleteTaskMutation,
   useTasksQuery,
   useUpdateTaskMutation,
-} from '../api/hooks'
-import type { Task, TaskInput, TaskStatus } from '../types/task'
+} from "../api/hooks";
+import type { Task, TaskInput, TaskStatus } from "../types/task";
 
 const statusOptions: TaskStatus[] = [
-  'NEW',
-  'SEEN_BY_SUPERVISOR',
-  'IN_PROGRESS',
-  'FIXED_PENDING_CHECK',
-  'REJECTED',
-  'CLOSED',
-]
+  "OPEN",
+  "SEEN_BY_SUPERVISOR",
+  "IN_PROGRESS",
+  "FIXED_PENDING_CHECK",
+  "REJECTED",
+  "CLOSED",
+];
 
 export function TasksPage() {
-  const { t } = useTranslation()
-  const projectsQuery = useProjectsQuery()
-  const departmentsQuery = useDepartmentsQuery()
-  const locationsQuery = useLocationsQuery()
-  const categoriesQuery = useCategoriesQuery('task')
-  const subcategoriesQuery = useSubcategoriesQuery('task')
-  const supervisorsQuery = useSupervisorsQuery()
+  const { t } = useTranslation();
+  const projectsQuery = useProjectsQuery();
+  const departmentsQuery = useDepartmentsQuery();
+  const locationsQuery = useLocationsQuery();
+  const categoriesQuery = useCategoriesQuery("task");
+  const supervisorsQuery = useSupervisorsQuery();
 
-  const tasksQuery = useTasksQuery()
-  const createMutation = useCreateTaskMutation()
-  const updateMutation = useUpdateTaskMutation()
-  const deleteMutation = useDeleteTaskMutation()
-  const addMediaMutation = useAddTaskMediaMutation()
+  const tasksQuery = useTasksQuery();
+  const createMutation = useCreateTaskMutation();
+  const updateMutation = useUpdateTaskMutation();
+  const deleteMutation = useDeleteTaskMutation();
+  const addMediaMutation = useAddTaskMediaMutation();
 
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
   const [formState, setFormState] = useState<TaskForm>({
-    createdByUserId: '',
-    supervisorId: '',
-    projectId: '',
-    locationId: '',
-    departmentId: '',
-    categoryId: '',
-    subcategoryId: '',
-    description: '',
-    status: 'NEW',
-    deadlineDate: '',
+    createdByUserId: "",
+    supervisorId: "",
+    projectId: "",
+    locationId: "",
+    departmentId: "",
+    categoryId: "",
+    description: "",
+    status: "OPEN",
+    deadlineDate: "",
     evidenceFiles: [],
     correctiveFiles: [],
-  })
+  });
 
-  const rows = tasksQuery.data ?? []
-  const isLoading = tasksQuery.isLoading
-  const error = tasksQuery.error as Error | null | undefined
-  const isSaving = createMutation.isPending || updateMutation.isPending
+  const rows = tasksQuery.data ?? [];
+  const isLoading = tasksQuery.isLoading;
+  const error = tasksQuery.error as Error | null | undefined;
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
-  const filteredSubcategories =
-    subcategoriesQuery.data?.filter(sub => sub.categoryId === formState.categoryId) ?? []
   const filteredLocations =
-    locationsQuery.data?.filter(loc => loc.projectId === formState.projectId) ?? []
+    locationsQuery.data?.filter(
+      (loc) => loc.projectId === formState.projectId
+    ) ?? [];
 
   const handleOpenDrawer = (row?: Task) => {
     if (row) {
-      const deadline = new Date(row.deadline)
-      setEditingId(row.id)
+      const deadline = new Date(row.deadline);
+      setEditingId(row.id);
       setFormState({
         createdByUserId: row.createdByUserId,
         supervisorId: row.supervisorId,
         projectId: row.projectId,
-        locationId: (row as any).locationId ?? '',
+        locationId: (row as any).locationId ?? "",
         departmentId: row.departmentId,
         categoryId: row.categoryId,
-        subcategoryId: row.subcategoryId ?? '',
         description: row.description,
         status: row.status,
-        deadlineDate: !Number.isNaN(deadline.getTime()) ? deadline.toISOString().slice(0, 10) : '',
+        deadlineDate: !Number.isNaN(deadline.getTime())
+          ? deadline.toISOString().slice(0, 10)
+          : "",
         evidenceFiles: [],
         correctiveFiles: [],
-      })
+      });
     } else {
-      setEditingId(null)
+      setEditingId(null);
       setFormState({
-        createdByUserId: '',
-        supervisorId: '',
-        projectId: '',
-        locationId: '',
-        departmentId: '',
-        categoryId: '',
-        subcategoryId: '',
-        description: '',
-        status: 'NEW',
-        deadlineDate: '',
+        createdByUserId: "",
+        supervisorId: "",
+        projectId: "",
+        locationId: "",
+        departmentId: "",
+        categoryId: "",
+        description: "",
+        status: "OPEN",
+        deadlineDate: "",
         evidenceFiles: [],
         correctiveFiles: [],
-      })
+      });
     }
-    setDrawerOpen(true)
-  }
+    setDrawerOpen(true);
+  };
 
   const handleCloseDrawer = () => {
-    setDrawerOpen(false)
-    setEditingId(null)
-  }
+    setDrawerOpen(false);
+    setEditingId(null);
+  };
+
+  const handleCloseDetails = () => {
+    setDetailTask(null);
+  };
 
   const handleDelete = async (id: string) => {
     const confirmed = window.confirm(
-      t('common.confirmDelete', { defaultValue: 'Are you sure you want to delete?' }),
-    )
-    if (!confirmed) return
-    await deleteMutation.mutateAsync(id)
-  }
+      t("common.confirmDelete", {
+        defaultValue: "Are you sure you want to delete?",
+      })
+    );
+    if (!confirmed) return;
+    await deleteMutation.mutateAsync(id);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const deadline = new Date(formState.deadlineDate)
-    if (Number.isNaN(deadline.getTime())) return
+    const deadline = new Date(formState.deadlineDate);
+    if (Number.isNaN(deadline.getTime())) return;
 
     if (formState.createdByUserId === formState.supervisorId) {
       window.alert(
-        t('tasks.form.supervisorMismatch', {
-          defaultValue: 'Creator and supervisor must be different',
-        }),
-      )
-      return
+        t("tasks.form.supervisorMismatch", {
+          defaultValue: "Creator and supervisor must be different",
+        })
+      );
+      return;
     }
 
     const payload: TaskInput = {
@@ -144,40 +148,39 @@ export function TasksPage() {
       // locationId omitted: backend does not accept this field
       departmentId: formState.departmentId,
       categoryId: formState.categoryId,
-      subcategoryId: formState.subcategoryId,
       description: formState.description,
       deadline: deadline.toISOString(),
       status: formState.status,
-    }
+    };
 
-    let taskId = editingId
+    let taskId = editingId;
     if (editingId) {
-      await updateMutation.mutateAsync({ id: editingId, data: payload })
+      await updateMutation.mutateAsync({ id: editingId, data: payload });
     } else {
-      const created = await createMutation.mutateAsync(payload)
-      taskId = created.id
+      const created = await createMutation.mutateAsync(payload);
+      taskId = created.id;
     }
 
     if (taskId) {
       const uploads = [
-        ...formState.evidenceFiles.map(file => ({
+        ...formState.evidenceFiles.map((file) => ({
           isCorrective: false,
           file,
           uploader: formState.createdByUserId,
         })),
-        ...formState.correctiveFiles.map(file => ({
+        ...formState.correctiveFiles.map((file) => ({
           isCorrective: true,
           file,
           uploader: formState.supervisorId,
         })),
-      ]
+      ];
       for (const item of uploads) {
-        const base64 = await fileToBase64(item.file)
-        const type = item.file.type.startsWith('video')
-          ? 'VIDEO'
-          : item.file.type.startsWith('image')
-            ? 'IMAGE'
-            : 'FILE'
+        const base64 = await fileToBase64(item.file);
+        const type = item.file.type.startsWith("video")
+          ? "VIDEO"
+          : item.file.type.startsWith("image")
+          ? "IMAGE"
+          : "FILE";
         await addMediaMutation.mutateAsync({
           taskId,
           data: {
@@ -186,22 +189,28 @@ export function TasksPage() {
             uploadedByUserId: item.uploader,
             isCorrective: item.isCorrective,
           },
-        })
+        });
       }
     }
 
-    handleCloseDrawer()
-  }
+    handleCloseDrawer();
+  };
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t('pages.tasks.title', { defaultValue: 'Tasks' })}
-        description={t('pages.tasks.description', { defaultValue: 'Track and manage tasks.' })}
+        title={t("pages.tasks.title", { defaultValue: "Tasks" })}
+        description={t("pages.tasks.description", {
+          defaultValue: "Track and manage tasks.",
+        })}
         actions={
-          <Button type="button" variant="outline" onClick={() => handleOpenDrawer()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleOpenDrawer()}
+          >
             <ListChecks className="mr-2 h-4 w-4" />
-            {t('tasks.actions.add', { defaultValue: 'Add Task' })}
+            {t("tasks.actions.add", { defaultValue: "Add Task" })}
           </Button>
         }
       />
@@ -212,57 +221,107 @@ export function TasksPage() {
             <table className="min-w-full divide-y divide-border">
               <thead className="bg-muted/50">
                 <tr>
-                  <Th>{t('tasks.table.project', { defaultValue: 'Project' })}</Th>
-                  <Th>{t('tasks.table.supervisor', { defaultValue: 'Supervisor' })}</Th>
-                  <Th>{t('tasks.table.category', { defaultValue: 'Category' })}</Th>
-                  <Th>{t('tasks.table.status', { defaultValue: 'Status' })}</Th>
-                  <Th>{t('tasks.table.deadline', { defaultValue: 'Deadline' })}</Th>
-                  <Th className="w-28 text-center">{t('tasks.table.actions', { defaultValue: 'Actions' })}</Th>
+                  <Th>
+                    {t("tasks.table.project", { defaultValue: "Project" })}
+                  </Th>
+                  <Th>
+                    {t("tasks.table.issuedBy", {
+                      defaultValue: "Issued by",
+                    })}
+                  </Th>
+                  <Th>
+                    {t("tasks.table.responsible", {
+                      defaultValue: "Responsible",
+                    })}
+                  </Th>
+                  <Th>
+                    {t("tasks.table.location", { defaultValue: "Area" })}
+                  </Th>
+                  <Th>
+                    {t("tasks.table.category", { defaultValue: "Category" })}
+                  </Th>
+                  <Th>{t("tasks.table.status", { defaultValue: "Status" })}</Th>
+                  <Th>
+                    {t("tasks.table.deadline", { defaultValue: "Deadline" })}
+                  </Th>
+                  <Th className="w-28 text-center">
+                    {t("tasks.table.actions", { defaultValue: "Actions" })}
+                  </Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-sm text-muted-foreground">
-                      {t('common.loading', { defaultValue: 'Loading...' })}
+                    <td
+                      colSpan={8}
+                      className="px-4 py-6 text-center text-sm text-muted-foreground"
+                    >
+                      {t("common.loading", { defaultValue: "Loading..." })}
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-sm text-destructive">
+                    <td
+                      colSpan={8}
+                      className="px-4 py-6 text-center text-sm text-destructive"
+                    >
                       {error.message}
                     </td>
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-sm text-muted-foreground">
-                      {t('tasks.table.empty', { defaultValue: 'No tasks yet.' })}
+                    <td
+                      colSpan={8}
+                      className="px-4 py-6 text-center text-sm text-muted-foreground"
+                    >
+                      {t("tasks.table.empty", {
+                        defaultValue: "No tasks yet.",
+                      })}
                     </td>
                   </tr>
                 ) : (
-                  rows.map(row => (
-                    <tr key={row.id} className="hover:bg-muted/40">
+                  rows.map((row) => (
+                    <tr
+                      key={row.id}
+                      className="hover:bg-muted/40 cursor-pointer"
+                      onClick={() => setDetailTask(row)}
+                    >
                       <Td>
                         {row.project?.name ||
-                          projectsQuery.data?.find(p => p.id === row.projectId)?.name ||
-                          t('common.noData', { defaultValue: 'N/A' })}
+                          projectsQuery.data?.find(
+                            (p) => p.id === row.projectId
+                          )?.name ||
+                          t("common.noData", { defaultValue: "N/A" })}
+                      </Td>
+                      <Td>
+                        {row.createdBy?.fullName ||
+                          supervisorsQuery.data?.find(
+                            (s) => s.id === row.createdByUserId
+                          )?.fullName ||
+                          t("common.noData", { defaultValue: "N/A" })}
                       </Td>
                       <Td>
                         {row.supervisor?.fullName ||
-                          supervisorsQuery.data?.find(s => s.id === row.supervisorId)?.fullName ||
-                          t('common.noData', { defaultValue: 'N/A' })}
+                          supervisorsQuery.data?.find(
+                            (s) => s.id === row.supervisorId
+                          )?.fullName ||
+                          t("common.noData", { defaultValue: "N/A" })}
+                      </Td>
+                      <Td>
+                        {row.location?.name ||
+                          locationsQuery.data?.find(
+                            (l) => l.id === (row.locationId as string | undefined)
+                          )?.name ||
+                          t("common.noData", { defaultValue: "N/A" })}
                       </Td>
                       <Td>
                         <div className="flex flex-col">
                           <span>
                             {row.category?.categoryName ||
-                              categoriesQuery.data?.find(c => c.id === row.categoryId)?.categoryName ||
-                              t('common.noData', { defaultValue: 'N/A' })}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {row.subcategory?.subcategoryName ||
-                              subcategoriesQuery.data?.find(s => s.id === row.subcategoryId)?.subcategoryName ||
-                              t('common.noData', { defaultValue: 'N/A' })}
+                              categoriesQuery.data?.find(
+                                (c) => c.id === row.categoryId
+                              )?.categoryName ||
+                              t("common.noData", { defaultValue: "N/A" })}
                           </span>
                         </div>
                       </Td>
@@ -272,17 +331,27 @@ export function TasksPage() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"
-                            onClick={() => handleOpenDrawer(row)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDrawer(row);
+                            }}
                             className="rounded-md border border-border bg-background p-2 text-muted-foreground hover:text-foreground"
-                            aria-label={t('common.edit', { defaultValue: 'Edit' })}
+                            aria-label={t("common.edit", {
+                              defaultValue: "Edit",
+                            })}
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(row.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(row.id);
+                            }}
                             className="rounded-md border border-border bg-background p-2 text-muted-foreground hover:text-destructive"
-                            aria-label={t('common.delete', { defaultValue: 'Delete' })}
+                            aria-label={t("common.delete", {
+                              defaultValue: "Delete",
+                            })}
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -303,26 +372,29 @@ export function TasksPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">
                 {editingId
-                  ? t('tasks.drawer.editTitle', { defaultValue: 'Edit Task' })
-                  : t('tasks.drawer.createTitle', { defaultValue: 'New Task' })}
+                  ? t("tasks.drawer.editTitle", { defaultValue: "Edit Task" })
+                  : t("tasks.drawer.createTitle", { defaultValue: "New Task" })}
               </h2>
               <button
                 type="button"
                 className="text-sm text-muted-foreground hover:text-foreground"
                 onClick={handleCloseDrawer}
               >
-                {t('common.close', { defaultValue: 'Close' })}
+                {t("common.close", { defaultValue: "Close" })}
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
               <TwoCol>
-                <Field label={t('tasks.form.creator', { defaultValue: 'Creator' })} required>
+                <Field
+                  label={t("tasks.form.creator", { defaultValue: "Issued by" })}
+                  required
+                >
                   <select
                     required
                     value={formState.createdByUserId}
-                    onChange={e =>
-                      setFormState(s => ({
+                    onChange={(e) =>
+                      setFormState((s) => ({
                         ...s,
                         createdByUserId: e.target.value,
                       }))
@@ -330,9 +402,11 @@ export function TasksPage() {
                     className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <option value="">
-                      {t('tasks.form.creatorPlaceholder', { defaultValue: 'Select creator' })}
+                      {t("tasks.form.creatorPlaceholder", {
+                        defaultValue: "Select Issued by",
+                      })}
                     </option>
-                    {supervisorsQuery.data?.map(s => (
+                    {supervisorsQuery.data?.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.fullName}
                       </option>
@@ -340,12 +414,17 @@ export function TasksPage() {
                   </select>
                 </Field>
 
-                <Field label={t('tasks.form.supervisor', { defaultValue: 'Supervisor' })} required>
+                <Field
+                  label={t("tasks.form.supervisor", {
+                    defaultValue: "Responsible",
+                  })}
+                  required
+                >
                   <select
                     required
                     value={formState.supervisorId}
-                    onChange={e =>
-                      setFormState(s => ({
+                    onChange={(e) =>
+                      setFormState((s) => ({
                         ...s,
                         supervisorId: e.target.value,
                       }))
@@ -353,11 +432,13 @@ export function TasksPage() {
                     className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <option value="">
-                      {t('tasks.form.supervisorPlaceholder', { defaultValue: 'Select supervisor' })}
+                      {t("tasks.form.supervisorPlaceholder", {
+                        defaultValue: "Select supervisor",
+                      })}
                     </option>
                     {supervisorsQuery.data
-                      ?.filter(s => s.id !== formState.createdByUserId)
-                      .map(s => (
+                      ?.filter((s) => s.id !== formState.createdByUserId)
+                      .map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.fullName}
                         </option>
@@ -367,26 +448,30 @@ export function TasksPage() {
               </TwoCol>
 
               <TwoCol>
-                <Field label={t('tasks.form.project', { defaultValue: 'Project' })} required>
+                <Field
+                  label={t("tasks.form.project", { defaultValue: "Project" })}
+                  required
+                >
                   <select
                     required
                     value={formState.projectId}
-                    onChange={e =>
-                      setFormState(s => ({
+                    onChange={(e) =>
+                      setFormState((s) => ({
                         ...s,
                         projectId: e.target.value,
-                        departmentId: '',
-                        categoryId: '',
-                        subcategoryId: '',
-                        locationId: '',
+                        departmentId: "",
+                        categoryId: "",
+                        locationId: "",
                       }))
                     }
                     className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <option value="">
-                      {t('tasks.form.projectPlaceholder', { defaultValue: 'Select project' })}
+                      {t("tasks.form.projectPlaceholder", {
+                        defaultValue: "Select project",
+                      })}
                     </option>
-                    {projectsQuery.data?.map(project => (
+                    {projectsQuery.data?.map((project) => (
                       <option key={project.id} value={project.id}>
                         {project.name}
                       </option>
@@ -394,12 +479,17 @@ export function TasksPage() {
                   </select>
                 </Field>
 
-                <Field label={t('tasks.form.department', { defaultValue: 'Department' })} required>
+                <Field
+                  label={t("tasks.form.department", {
+                    defaultValue: "Department",
+                  })}
+                  required
+                >
                   <select
                     required
                     value={formState.departmentId}
-                    onChange={e =>
-                      setFormState(s => ({
+                    onChange={(e) =>
+                      setFormState((s) => ({
                         ...s,
                         departmentId: e.target.value,
                       }))
@@ -407,9 +497,11 @@ export function TasksPage() {
                     className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <option value="">
-                      {t('tasks.form.departmentPlaceholder', { defaultValue: 'Select department' })}
+                      {t("tasks.form.departmentPlaceholder", {
+                        defaultValue: "Select department",
+                      })}
                     </option>
-                    {departmentsQuery.data?.map(department => (
+                    {departmentsQuery.data?.map((department) => (
                       <option key={department.id} value={department.id}>
                         {department.name}
                       </option>
@@ -418,136 +510,172 @@ export function TasksPage() {
                 </Field>
               </TwoCol>
 
-              <Field label={t('tasks.form.location', { defaultValue: 'Location' })}>
-                <select
-                  value={formState.locationId}
-                  onChange={e => setFormState(s => ({ ...s, locationId: e.target.value }))}
-                  disabled={!formState.projectId}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                >
-                  <option value="">
-                    {t('tasks.form.locationPlaceholder', {
-                      defaultValue: formState.projectId ? 'Select location' : 'Select project first',
-                    })}
-                  </option>
-                  {filteredLocations.map(location => (
-                    <option key={location.id} value={location.id}>
-                      {location.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
               <TwoCol>
-                <Field label={t('tasks.form.category', { defaultValue: 'Category' })} required>
+                <Field
+                  label={t("tasks.form.location", { defaultValue: "Area" })}
+                >
+                  <select
+                    value={formState.locationId}
+                    onChange={(e) =>
+                      setFormState((s) => ({
+                        ...s,
+                        locationId: e.target.value,
+                      }))
+                    }
+                    disabled={!formState.projectId}
+                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <option value="">
+                      {t("tasks.form.locationPlaceholder", {
+                        defaultValue: formState.projectId
+                          ? "Select area"
+                          : "Select project first",
+                      })}
+                    </option>
+                    {filteredLocations.map((location) => (
+                      <option key={location.id} value={location.id}>
+                        {location.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field
+                  label={t("tasks.form.category", { defaultValue: "Category" })}
+                  required
+                >
                   <select
                     required
                     value={formState.categoryId}
-                    onChange={e =>
-                      setFormState(s => ({
+                    onChange={(e) =>
+                      setFormState((s) => ({
                         ...s,
                         categoryId: e.target.value,
-                        subcategoryId: '',
                       }))
                     }
                     className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <option value="">
-                      {t('tasks.form.categoryPlaceholder', { defaultValue: 'Select category' })}
+                      {t("tasks.form.categoryPlaceholder", {
+                        defaultValue: "Select category",
+                      })}
                     </option>
-                    {categoriesQuery.data?.map(category => (
+                    {categoriesQuery.data?.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.categoryName}
                       </option>
                     ))}
                   </select>
                 </Field>
-                <Field label={t('tasks.form.subcategory', { defaultValue: 'Subcategory' })} required>
+              </TwoCol>
+
+              <TwoCol>
+                <Field
+                  label={t("tasks.form.status", { defaultValue: "Status" })}
+                  required
+                >
                   <select
-                    required
-                    value={formState.subcategoryId}
-                    onChange={e => setFormState(s => ({ ...s, subcategoryId: e.target.value }))}
+                    value={formState.status}
+                    onChange={(e) =>
+                      setFormState((s) => ({
+                        ...s,
+                        status: e.target.value as TaskStatus,
+                      }))
+                    }
                     className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    disabled={!formState.categoryId}
                   >
-                    <option value="">
-                      {t('tasks.form.subcategoryPlaceholder', { defaultValue: 'Select subcategory' })}
-                    </option>
-                    {filteredSubcategories.map(subcategory => (
-                      <option key={subcategory.id} value={subcategory.id}>
-                        {subcategory.subcategoryName}
+                    {statusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
                       </option>
                     ))}
                   </select>
                 </Field>
+                <Field
+                  label={t("tasks.form.deadlineDate", {
+                    defaultValue: "Deadline date",
+                  })}
+                  required
+                >
+                  <input
+                    required
+                    type="date"
+                    value={formState.deadlineDate}
+                    onChange={(e) =>
+                      setFormState((s) => ({
+                        ...s,
+                        deadlineDate: e.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  />
+                </Field>
+              </TwoCol>
+              <TwoCol>
+                <Field
+                  label={t("tasks.form.evidence", {
+                    defaultValue: "Evidence (images/videos/files)",
+                  })}
+                >
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    onChange={(e) =>
+                      setFormState((s) => ({
+                        ...s,
+                        evidenceFiles: e.target.files
+                          ? Array.from(e.target.files)
+                          : [],
+                      }))
+                    }
+                    className="mt-1 block w-full text-sm"
+                  />
+                </Field>
+
+                <Field
+                  label={t("tasks.form.corrective", {
+                    defaultValue: "Corrective files (images/videos/files)",
+                  })}
+                >
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    onChange={(e) =>
+                      setFormState((s) => ({
+                        ...s,
+                        correctiveFiles: e.target.files
+                          ? Array.from(e.target.files)
+                          : [],
+                      }))
+                    }
+                    className="mt-1 block w-full text-sm"
+                  />
+                </Field>
               </TwoCol>
 
-              <Field label={t('tasks.form.status', { defaultValue: 'Status' })} required>
-                <select
-                  value={formState.status}
-                  onChange={e => setFormState(s => ({ ...s, status: e.target.value as TaskStatus }))}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                >
-                  {statusOptions.map(status => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field label={t('tasks.form.deadlineDate', { defaultValue: 'Deadline date' })} required>
-                <input
-                  required
-                  type="date"
-                  value={formState.deadlineDate}
-                  onChange={e => setFormState(s => ({ ...s, deadlineDate: e.target.value }))}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                />
-              </Field>
-
-              <Field label={t('tasks.form.evidence', { defaultValue: 'Evidence (images/videos/files)' })}>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                  onChange={e =>
-                    setFormState(s => ({
-                      ...s,
-                      evidenceFiles: e.target.files ? Array.from(e.target.files) : [],
-                    }))
-                  }
-                  className="mt-1 block w-full text-sm"
-                />
-              </Field>
-
-              <Field label={t('tasks.form.corrective', { defaultValue: 'Corrective files (images/videos/files)' })}>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                  onChange={e =>
-                    setFormState(s => ({
-                      ...s,
-                      correctiveFiles: e.target.files ? Array.from(e.target.files) : [],
-                    }))
-                  }
-                  className="mt-1 block w-full text-sm"
-                />
-              </Field>
-
-              <Field label={t('tasks.form.description', { defaultValue: 'Description' })}>
+              <Field
+                label={t("tasks.form.description", {
+                  defaultValue: "Description",
+                })}
+              >
                 <textarea
                   rows={4}
                   value={formState.description}
-                  onChange={e => setFormState(s => ({ ...s, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormState((s) => ({ ...s, description: e.target.value }))
+                  }
                   className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </Field>
 
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={handleCloseDrawer}>
-                  {t('common.cancel', { defaultValue: 'Cancel' })}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCloseDrawer}
+                >
+                  {t("common.cancel", { defaultValue: "Cancel" })}
                 </Button>
                 <Button
                   type="submit"
@@ -557,49 +685,157 @@ export function TasksPage() {
                     !formState.projectId ||
                     !formState.departmentId ||
                     !formState.categoryId ||
-                    !formState.subcategoryId ||
                     !formState.deadlineDate ||
                     isSaving
                   }
                 >
-                  {editingId ? t('common.save', { defaultValue: 'Save' }) : t('tasks.actions.add', { defaultValue: 'Add Task' })}
+                  {editingId
+                    ? t("common.save", { defaultValue: "Save" })
+                    : t("tasks.actions.add", { defaultValue: "Add Task" })}
                 </Button>
               </div>
             </form>
           </div>
         </div>
       ) : null}
+
+      {detailTask ? (
+        <div className="fixed inset-0 z-40 flex justify-end">
+          <div className="flex-1 bg-black/40" onClick={handleCloseDetails} />
+          <div className="h-full w-full max-w-md overflow-y-auto bg-background p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {t("tasks.drawer.viewTitle", { defaultValue: "Task details" })}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("tasks.drawer.viewSubtitle", {
+                    defaultValue: "Full task information",
+                  })}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={handleCloseDetails}
+              >
+                {t("common.close", { defaultValue: "Close" })}
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              <DetailRow
+                label={t("tasks.table.project", { defaultValue: "Project" })}
+                value={
+                  detailTask.project?.name ||
+                  projectsQuery.data?.find((p) => p.id === detailTask.projectId)
+                    ?.name ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("tasks.form.department", { defaultValue: "Department" })}
+                value={
+                  detailTask.department?.name ||
+                  departmentsQuery.data?.find((d) => d.id === detailTask.departmentId)
+                    ?.name ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("tasks.table.location", { defaultValue: "Area" })}
+                value={
+                  detailTask.location?.name ||
+                  locationsQuery.data?.find(
+                    (l) => l.id === (detailTask.locationId as string | undefined)
+                  )?.name ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("tasks.form.category", { defaultValue: "Category" })}
+                value={
+                  detailTask.category?.categoryName ||
+                  categoriesQuery.data?.find((c) => c.id === detailTask.categoryId)
+                    ?.categoryName ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("tasks.table.issuedBy", { defaultValue: "Issued by" })}
+                value={
+                  detailTask.createdBy?.fullName ||
+                  supervisorsQuery.data?.find(
+                    (s) => s.id === detailTask.createdByUserId
+                  )?.fullName ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("tasks.table.responsible", { defaultValue: "Responsible" })}
+                value={
+                  detailTask.supervisor?.fullName ||
+                  supervisorsQuery.data?.find(
+                    (s) => s.id === detailTask.supervisorId
+                  )?.fullName ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("tasks.table.status", { defaultValue: "Status" })}
+                value={detailTask.status}
+              />
+              <DetailRow
+                label={t("tasks.table.deadline", { defaultValue: "Deadline" })}
+                value={formatDate(detailTask.deadline)}
+              />
+              <DetailRow
+                label={t("tasks.drawer.createdAt", { defaultValue: "Created at" })}
+                value={formatDate(detailTask.createdAt)}
+              />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("tasks.form.description", { defaultValue: "Description" })}
+                </p>
+                <p className="mt-1 whitespace-pre-line text-sm text-foreground">
+                  {detailTask.description ||
+                    t("common.noData", { defaultValue: "N/A" })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
-  )
+  );
 }
 
 type TaskForm = {
-  createdByUserId: string
-  supervisorId: string
-  projectId: string
-  locationId: string
-  departmentId: string
-  categoryId: string
-  subcategoryId: string
-  description: string
-  deadlineDate: string
-  status: TaskStatus
-  evidenceFiles: File[]
-  correctiveFiles: File[]
-}
+  createdByUserId: string;
+  supervisorId: string;
+  projectId: string;
+  locationId: string;
+  departmentId: string;
+  categoryId: string;
+  description: string;
+  deadlineDate: string;
+  status: TaskStatus;
+  evidenceFiles: File[];
+  correctiveFiles: File[];
+};
 
 const TwoCol = ({ children }: { children: React.ReactNode }) => (
   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{children}</div>
-)
+);
 
 const Field = ({
   label,
   children,
   required,
 }: {
-  label: string
-  children: React.ReactNode
-  required?: boolean
+  label: string;
+  children: React.ReactNode;
+  required?: boolean;
 }) => (
   <label className="space-y-1 text-sm font-medium text-foreground">
     <span>
@@ -608,30 +844,45 @@ const Field = ({
     </span>
     {children}
   </label>
-)
+);
 
 const Th = (props: React.HTMLAttributes<HTMLTableCellElement>) => (
   <th
     className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
     {...props}
   />
-)
+);
 
 const Td = (props: React.TdHTMLAttributes<HTMLTableCellElement>) => (
   <td className="px-4 py-3 text-sm text-foreground align-middle" {...props} />
-)
+);
 
 const formatDate = (value?: string) => {
-  if (!value) return 'N/A'
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return 'N/A'
-  return d.toLocaleDateString()
-}
+  if (!value) return "N/A";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "N/A";
+  return d.toLocaleDateString();
+};
+
+const DetailRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | null;
+}) => (
+  <div className="flex items-start justify-between gap-4 rounded-md border border-border p-3">
+    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      {label}
+    </div>
+    <div className="text-sm text-foreground text-right">{value || "N/A"}</div>
+  </div>
+);
 
 const fileToBase64 = (file: File) =>
   new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });

@@ -15,6 +15,7 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { CreateTaskMediaDto } from './dto/create-task-media.dto';
+import { MobileRole } from '../mobile-accounts/mobile-role';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('api/tasks')
@@ -25,9 +26,17 @@ export class TasksController {
     return req.user?.tenantId ?? req.user?.userId;
   }
 
+  private getRole(req: any): MobileRole | null {
+    return req.user?.role === MobileRole.SUPERVISOR ? MobileRole.SUPERVISOR : null;
+  }
+
   @Get()
   list(@Req() req: any) {
-    return this.tasksService.findAllForTenant(this.getTenantId(req));
+    return this.tasksService.findAllForTenant(
+      this.getTenantId(req),
+      this.getRole(req),
+      req.user?.userId ?? null,
+    );
   }
 
   @Post()
@@ -40,7 +49,14 @@ export class TasksController {
 
   @Patch(':id')
   update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateTaskDto) {
-    return this.tasksService.updateStatus(this.getTenantId(req), null, null, id, dto);
+    const role = this.getRole(req);
+    return this.tasksService.updateStatus(
+      this.getTenantId(req),
+      role ? req.user?.userId ?? null : null,
+      role,
+      id,
+      dto,
+    );
   }
 
   @Post(':id/media')

@@ -228,10 +228,10 @@ const resources = {
       },
 
       supervisors: {
-        searchPlaceholder: "Search supervisors...",
-        exportError: "Failed to export supervisors.",
+        searchPlaceholder: "Search responsible...",
+        exportError: "Failed to export responsible.",
         actions: {
-          add: "Add Supervisor",
+          add: "Add Responsible",
           export: "Export",
         },
         table: {
@@ -241,15 +241,15 @@ const resources = {
           projects: "Projects",
           status: "Status",
           actions: "Actions",
-          empty: "No supervisors yet.",
-          noResults: "No supervisors match your search.",
+          empty: "No responsible yet.",
+          noResults: "No responsible match your search.",
           phone: "Phone",
           email: "Email",
         },
         form: {
-          editTitle: "Edit Supervisor",
-          createTitle: "Add Supervisor",
-          subtitle: "Supervisor details",
+          editTitle: "Edit Responsible",
+          createTitle: "Add Responsible",
+          subtitle: "Responsible details",
           name: "Full name",
           login: "Login",
           phone: "Phone number",
@@ -350,10 +350,10 @@ const resources = {
       },
 
       locations: {
-        actions: { add: "Add Location" },
+        actions: { add: "Add Area" },
         table: {
           project: "Project",
-          name: "Location Name",
+          name: "Area Name",
           actions: "Actions",
           empty: "No locations yet.",
         },

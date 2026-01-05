@@ -13,7 +13,6 @@ import { Tenant } from "../tenants/tenant.entity";
 import { Project } from "../projects/project.entity";
 import { Department } from "../departments/department.entity";
 import { Category } from "../categories/category.entity";
-import { Subcategory } from "../subcategories/subcategory.entity";
 import { MobileAccount } from "../mobile-accounts/mobile-account.entity";
 import { Company } from "../companies/company.entity";
 import { TaskStatus } from "./task-status";
@@ -62,16 +61,6 @@ export class Task {
     onDelete: "CASCADE",
   })
   category: Category;
-
-  // Subcategory (optional)
-  @Column({ type: "uuid", nullable: true })
-  subcategoryId?: string | null;
-
-  @ManyToOne(() => Subcategory, (subcategory) => subcategory.tasks, {
-    onDelete: "SET NULL",
-    nullable: true,
-  })
-  subcategory?: Subcategory | null;
 
   // Creator (optional for legacy rows; you can backfill later)
   @Column({ type: "uuid", nullable: true })

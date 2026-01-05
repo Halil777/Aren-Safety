@@ -16,7 +16,21 @@
       "Bash(taskkill /F /PID 16072)",
       "Bash(taskkill //F //PID 16072)",
       "Bash(timeout /t 1)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(cd:*)",
+      "Bash(npx eas-cli:*)",
+      "Bash(timeout /t 10)",
+      "Bash(gradlew.bat clean assembleRelease:*)",
+      "Bash(./gradlew.bat clean assembleRelease)",
+      "Bash(./gradlew.bat:*)",
+      "Bash(move C:UsersAdminDesktopprojectssafety C:safety)",
+      "Bash(robocopy:*)",
+      "Bash(xcopy:*)",
+      "Bash(subst S: \"C:\\\\Users\\\\Admin\\\\Desktop\\\\projects\\\\safety\")",
+      "Bash(if exist android.gradle rmdir /s /q android.gradle)",
+      "Bash(if exist android.cxx rmdir /s /q android.cxx)",
+      "Bash(powershell -Command:*)",
+      "Bash(subst S: /D)"
     ],
     "deny": [],
     "ask": []

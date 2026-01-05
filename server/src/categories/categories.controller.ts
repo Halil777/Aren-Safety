@@ -18,17 +18,21 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 @UseGuards(AuthGuard('jwt'))
 @Controller('api')
 export class CategoriesController {
+  private getTenantId(req: any) {
+    return req.user?.tenantId ?? req.user?.userId;
+  }
+
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post('observation-categories')
   createObservation(@Req() req: any, @Body() dto: CreateCategoryDto) {
-    return this.categoriesService.create(req.user.userId, CategoryType.OBSERVATION, dto);
+    return this.categoriesService.create(this.getTenantId(req), CategoryType.OBSERVATION, dto);
   }
 
   @Get('observation-categories')
   findObservation(@Req() req: any) {
     return this.categoriesService.findAllForTenant(
-      req.user.userId,
+      this.getTenantId(req),
       CategoryType.OBSERVATION,
     );
   }
@@ -40,7 +44,7 @@ export class CategoriesController {
     @Body() dto: UpdateCategoryDto,
   ) {
     return this.categoriesService.update(
-      req.user.userId,
+      this.getTenantId(req),
       id,
       CategoryType.OBSERVATION,
       dto,
@@ -50,7 +54,7 @@ export class CategoriesController {
   @Delete('observation-categories/:id')
   removeObservation(@Req() req: any, @Param('id') id: string) {
     return this.categoriesService.remove(
-      req.user.userId,
+      this.getTenantId(req),
       id,
       CategoryType.OBSERVATION,
     );
@@ -58,12 +62,12 @@ export class CategoriesController {
 
   @Post('task-categories')
   createTask(@Req() req: any, @Body() dto: CreateCategoryDto) {
-    return this.categoriesService.create(req.user.userId, CategoryType.TASK, dto);
+    return this.categoriesService.create(this.getTenantId(req), CategoryType.TASK, dto);
   }
 
   @Get('task-categories')
   findTask(@Req() req: any) {
-    return this.categoriesService.findAllForTenant(req.user.userId, CategoryType.TASK);
+    return this.categoriesService.findAllForTenant(this.getTenantId(req), CategoryType.TASK);
   }
 
   @Patch('task-categories/:id')
@@ -72,11 +76,11 @@ export class CategoriesController {
     @Param('id') id: string,
     @Body() dto: UpdateCategoryDto,
   ) {
-    return this.categoriesService.update(req.user.userId, id, CategoryType.TASK, dto);
+    return this.categoriesService.update(this.getTenantId(req), id, CategoryType.TASK, dto);
   }
 
   @Delete('task-categories/:id')
   removeTask(@Req() req: any, @Param('id') id: string) {
-    return this.categoriesService.remove(req.user.userId, id, CategoryType.TASK);
+    return this.categoriesService.remove(this.getTenantId(req), id, CategoryType.TASK);
   }
 }

@@ -7,7 +7,6 @@ import { TaskAttachment } from './taskAttachment.entity';
 import { Project } from '../projects/project.entity';
 import { Department } from '../departments/department.entity';
 import { Category } from '../categories/category.entity';
-import { Subcategory } from '../subcategories/subcategory.entity';
 import { MobileAccount } from '../mobile-accounts/mobile-account.entity';
 import { Company } from '../companies/company.entity';
 import { MobileTasksController } from './mobile-tasks.controller';
@@ -20,7 +19,6 @@ import { MobileTasksController } from './mobile-tasks.controller';
       Project,
       Department,
       Category,
-      Subcategory,
       MobileAccount,
       Company,
     ]),

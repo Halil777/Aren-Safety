@@ -34,7 +34,8 @@ import { LocationsModule } from "./locations/locations.module";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ".env",
+      // Load the common .env plus optional local/production overrides if present
+      envFilePath: [".env", ".env.local", ".env.production"],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

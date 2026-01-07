@@ -15,7 +15,9 @@ export class MailService {
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASS');
     const host = this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com');
-    const port = this.configService.get<number>('SMTP_PORT', 587);
+    const port = Number(this.configService.get<string>('SMTP_PORT', '587'));
+    const secure =
+      this.configService.get<string>('SMTP_SECURE', `${port === 465}`) === 'true';
     const supportTo =
       this.configService.get<string>('SUPPORT_TO') ||
       this.configService.get<string>('SMTP_TO');
@@ -32,10 +34,16 @@ export class MailService {
       new Set([...(configuredRecipients ?? []), ...(user ? [user] : []), ...fallbackRecipients]),
     );
 
+    if (!user || !pass) {
+      this.logger.warn(
+        'SMTP_USER/SMTP_PASS are not configured. Support emails will likely fail until credentials are provided.',
+      );
+    }
+
     this.transporter = nodemailer.createTransport({
       host,
       port,
-      secure: port === 465,
+      secure,
       auth: user && pass ? { user, pass } : undefined,
     });
   }

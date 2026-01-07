@@ -9,20 +9,28 @@ export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter;
   private readonly from: string;
-  private readonly adminTo: string;
+  private readonly adminTo: string[];
 
   constructor(private readonly configService: ConfigService) {
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASS');
     const host = this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com');
     const port = this.configService.get<number>('SMTP_PORT', 587);
+    const supportTo =
+      this.configService.get<string>('SUPPORT_TO') ||
+      this.configService.get<string>('SMTP_TO');
+
     this.from =
       this.configService.get<string>('SMTP_FROM') || user || 'no-reply@example.com';
-    this.adminTo =
-      this.configService.get<string>('SUPPORT_TO') ||
-      this.configService.get<string>('SMTP_TO') ||
-      user ||
-      'microsoft7779@gmail.com';
+    const configuredRecipients = supportTo
+      ?.split(/[,;]/)
+      .map((email) => email.trim())
+      .filter(Boolean);
+    const fallbackRecipients = ['microsoft7779@gmail.com', 'info@arensafety.com'];
+
+    this.adminTo = Array.from(
+      new Set([...(configuredRecipients ?? []), ...(user ? [user] : []), ...fallbackRecipients]),
+    );
 
     this.transporter = nodemailer.createTransport({
       host,
@@ -33,7 +41,7 @@ export class MailService {
   }
 
   async sendSupportNotification(message: Message) {
-    if (!this.adminTo) {
+    if (!this.adminTo || this.adminTo.length === 0) {
       this.logger.warn('No admin recipient configured for support notifications');
       return;
     }
@@ -41,6 +49,7 @@ export class MailService {
     const mailOptions = {
       from: this.from,
       to: this.adminTo,
+      replyTo: message.tenantEmail || undefined,
       subject: `[Tenant Support] ${message.subject}`,
       text: [
         `Tenant ID: ${message.tenantId ?? 'Unknown'}`,

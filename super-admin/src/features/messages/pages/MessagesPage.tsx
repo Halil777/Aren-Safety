@@ -13,7 +13,9 @@ export function MessagesPage() {
 
   useEffect(() => {
     markReadMutation.mutate()
-  }, [markReadMutation])
+    // Mark all messages as read only once when the page mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <PageStack>

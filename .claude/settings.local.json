@@ -30,7 +30,8 @@
       "Bash(if exist android.gradle rmdir /s /q android.gradle)",
       "Bash(if exist android.cxx rmdir /s /q android.cxx)",
       "Bash(powershell -Command:*)",
-      "Bash(subst S: /D)"
+      "Bash(subst S: /D)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

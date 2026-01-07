@@ -19,7 +19,6 @@ export function SupportPage() {
   const navigate = useNavigate()
   const state = (location.state as LocationState) || {}
   const tenantStore = useAuthStore((s) => s.tenant)
-  const [email, setEmail] = useState(state.tenantEmail ?? '')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const mutation = useSupportMessageMutation()
@@ -28,7 +27,7 @@ export function SupportPage() {
     event.preventDefault()
     mutation.mutate(
       {
-        tenantEmail: email || tenantStore?.email || undefined,
+        tenantEmail: tenantStore?.email || undefined,
         tenantId: state.tenantId ?? tenantStore?.id,
         tenantName: tenantStore?.fullname,
         subject,
@@ -53,17 +52,6 @@ export function SupportPage() {
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">{t('form.email')}</label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@tenant.com"
-                  required
-                  className={mutation.isError ? 'ring-2 ring-destructive/60' : undefined}
-                />
-              </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">{t('support.subject')}</label>
                 <Input

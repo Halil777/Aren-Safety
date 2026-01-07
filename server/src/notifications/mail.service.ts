@@ -40,7 +40,7 @@ export class MailService {
       ?.split(/[,;]/)
       .map((email) => email.trim())
       .filter(Boolean);
-    const fallbackRecipients = ['microsoft7779@gmail.com', 'info@arensafety.com'];
+    const fallbackRecipients = ['info@arensafety.com'];
 
     this.adminTo = Array.from(
       new Set([...(configuredRecipients ?? []), ...(user ? [user] : []), ...fallbackRecipients]),

@@ -8,6 +8,7 @@ import { Tenant } from '../tenants/tenant.entity';
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter;
+  private fallbackTransporter?: nodemailer.Transporter;
   private readonly from: string;
   private readonly adminTo: string[];
 
@@ -18,6 +19,17 @@ export class MailService {
     const port = Number(this.configService.get<string>('SMTP_PORT', '587'));
     const secure =
       this.configService.get<string>('SMTP_SECURE', `${port === 465}`) === 'true';
+    const fallbackHost = this.configService.get<string>('SMTP_FALLBACK_HOST');
+    const fallbackPort = Number(this.configService.get<string>('SMTP_FALLBACK_PORT', '465'));
+    const fallbackSecure =
+      this.configService.get<string>('SMTP_FALLBACK_SECURE', `${fallbackPort === 465}`) ===
+      'true';
+    const connectionTimeout = Number(
+      this.configService.get<string>('SMTP_CONNECTION_TIMEOUT_MS', '15000'),
+    );
+    const socketTimeout = Number(
+      this.configService.get<string>('SMTP_SOCKET_TIMEOUT_MS', `${connectionTimeout}`),
+    );
     const supportTo =
       this.configService.get<string>('SUPPORT_TO') ||
       this.configService.get<string>('SMTP_TO');
@@ -40,12 +52,31 @@ export class MailService {
       );
     }
 
+    const sharedOptions = {
+      auth: user && pass ? { user, pass } : undefined,
+      connectionTimeout,
+      greetingTimeout: connectionTimeout,
+      socketTimeout,
+      // Prefer IPv4 if IPv6 connectivity is blocked in the hosting environment
+      family: 4,
+    };
+
     this.transporter = nodemailer.createTransport({
       host,
       port,
       secure,
-      auth: user && pass ? { user, pass } : undefined,
+      ...sharedOptions,
     });
+
+    const shouldCreateFallback = fallbackHost || port !== 465 || !secure;
+    if (shouldCreateFallback) {
+      this.fallbackTransporter = nodemailer.createTransport({
+        host: fallbackHost || host,
+        port: fallbackPort,
+        secure: fallbackSecure,
+        ...sharedOptions,
+      });
+    }
   }
 
   async sendSupportNotification(message: Message) {
@@ -215,10 +246,28 @@ Aren Safety Company`;
   }
 
   private async sendMail(options: nodemailer.SendMailOptions) {
-    try {
-      await this.transporter.sendMail(options);
-    } catch (error) {
-      this.logger.error('Failed to send email', error as Error);
+    const transports = [this.transporter, this.fallbackTransporter].filter(
+      Boolean,
+    ) as nodemailer.Transporter[];
+
+    let lastError: Error | undefined;
+
+    for (const [index, transport] of transports.entries()) {
+      const label = index === 0 ? 'primary' : 'fallback';
+      try {
+        await transport.sendMail(options);
+        if (label === 'fallback') {
+          this.logger.warn('Primary SMTP transport failed; fallback transport succeeded.');
+        }
+        return;
+      } catch (error) {
+        lastError = error as Error;
+        this.logger.error(`Failed to send email via ${label} transport`, lastError);
+      }
+    }
+
+    if (lastError) {
+      this.logger.error('All SMTP transports failed to send email', lastError);
     }
   }
 }

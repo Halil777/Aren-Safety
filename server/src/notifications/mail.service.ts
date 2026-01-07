@@ -66,7 +66,11 @@ export class MailService {
       port,
       secure,
       ...sharedOptions,
+      logger: true,
+      debug: true,
     });
+
+    this.logger.log(`SMTP configured: host=${host}, port=${port}, secure=${secure}, user=${user}`);
 
     const shouldCreateFallback = fallbackHost || port !== 465 || !secure;
     if (shouldCreateFallback) {
@@ -75,7 +79,10 @@ export class MailService {
         port: fallbackPort,
         secure: fallbackSecure,
         ...sharedOptions,
+        logger: true,
+        debug: true,
       });
+      this.logger.log(`Fallback SMTP configured: host=${fallbackHost || host}, port=${fallbackPort}, secure=${fallbackSecure}`);
     }
   }
 
@@ -91,11 +98,11 @@ export class MailService {
       replyTo: message.tenantEmail || undefined,
       subject: `[Tenant Support] ${message.subject}`,
       text: [
-        `Tenant ID: ${message.tenantId ?? 'Unknown'}`,
-        `Tenant Email: ${message.tenantEmail ?? 'Unknown'}`,
+        message.tenantName ? `From: ${message.tenantName}` : undefined,
+        message.tenantEmail ? `Email: ${message.tenantEmail}` : 'Email: Unknown',
         '',
         message.body,
-      ].join('\n'),
+      ].filter(Boolean).join('\n'),
     };
 
     await this.sendMail(mailOptions);
@@ -252,17 +259,27 @@ Aren Safety Company`;
 
     let lastError: Error | undefined;
 
+    this.logger.log(`Attempting to send email to: ${options.to}, from: ${options.from}, subject: ${options.subject}`);
+
     for (const [index, transport] of transports.entries()) {
       const label = index === 0 ? 'primary' : 'fallback';
       try {
-        await transport.sendMail(options);
+        this.logger.log(`Trying ${label} transport...`);
+        const info = await transport.sendMail(options);
+        this.logger.log(`✓ Email sent successfully via ${label} transport. MessageId: ${info.messageId}`);
         if (label === 'fallback') {
           this.logger.warn('Primary SMTP transport failed; fallback transport succeeded.');
         }
         return;
       } catch (error) {
         lastError = error as Error;
-        this.logger.error(`Failed to send email via ${label} transport`, lastError);
+        const errorDetails = {
+          message: lastError.message,
+          code: (lastError as any).code,
+          command: (lastError as any).command,
+          stack: lastError.stack,
+        };
+        this.logger.error(`✗ Failed to send email via ${label} transport:`, JSON.stringify(errorDetails, null, 2));
       }
     }
 

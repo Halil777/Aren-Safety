@@ -8,6 +8,7 @@ export class MessagesController {
 
   @Post()
   async create(@Body() createMessageDto: CreateMessageDto) {
+    console.log('Received support message:', JSON.stringify(createMessageDto, null, 2));
     return this.messagesService.create(createMessageDto);
   }
 

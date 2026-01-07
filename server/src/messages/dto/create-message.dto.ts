@@ -2,10 +2,6 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-vali
 
 export class CreateMessageDto {
   @IsOptional()
-  @IsString()
-  tenantId?: string;
-
-  @IsOptional()
   @IsEmail()
   tenantEmail?: string;
 

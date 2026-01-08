@@ -2,8 +2,8 @@
 const API_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   process.env.EXPO_PUBLIC_API_URL ??
-  "http//10.10.20.77:4000/api";
-// "http//10.10.20.77:4000/api";
+  "https://api.arensafety.com/api";
+// "https://api.arensafety.com/api";
 
 type FetchOptions = {
   token?: string | null;

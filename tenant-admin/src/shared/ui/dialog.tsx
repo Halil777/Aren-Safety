@@ -87,7 +87,7 @@ export function DialogFooter({ className, ...props }: HTMLAttributes<HTMLDivElem
 
 export function DialogTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-lg font-semibold leading-tight tracking-tight', className)} {...props} />
+    <h3 className={cn('text-lg font-semibold leading-tight tracking-tight uppercase', className)} {...props} />
   )
 }
 

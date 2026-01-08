@@ -182,7 +182,7 @@ export function TypesPage() {
           <div className="h-screen w-full bg-background shadow-2xl md:w-[32%]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold uppercase">
                   {editingId
                     ? t('types.form.editTitle', { defaultValue: 'Edit Type' })
                     : t('types.form.createTitle', { defaultValue: 'Add Type' })}

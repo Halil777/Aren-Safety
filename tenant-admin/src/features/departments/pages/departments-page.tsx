@@ -166,7 +166,7 @@ export function DepartmentsPage() {
           <div className="h-screen w-full bg-background shadow-2xl md:w-[30%]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold uppercase">
                   {editingId
                     ? t('departments.form.editTitle', { defaultValue: 'Edit Department' })
                     : t('departments.form.createTitle', { defaultValue: 'Add Department' })}

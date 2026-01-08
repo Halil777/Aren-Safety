@@ -17,6 +17,7 @@ import { ObservationStatus } from './observation-status';
 import { ObservationMedia } from './observationMedia.entity';
 import { Company } from '../companies/company.entity';
 import { Location } from '../locations/location.entity';
+import { TypeEntity } from '../types/type.entity';
 
 @Entity('observations')
 export class Observation {
@@ -60,6 +61,12 @@ export class Observation {
     onDelete: 'SET NULL',
   })
   subcategory?: Subcategory | null;
+
+  @Column({ nullable: true })
+  branchId?: string | null;
+
+  @ManyToOne(() => TypeEntity, { onDelete: 'SET NULL' })
+  branch?: TypeEntity | null;
 
   @Column()
   createdByUserId: string;

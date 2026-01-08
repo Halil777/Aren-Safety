@@ -54,7 +54,7 @@ export const GlassCardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTML
     return (
       <h3
         ref={ref}
-        className={cn('text-lg font-semibold leading-none tracking-tight', className)}
+        className={cn('text-lg font-semibold leading-none tracking-tight uppercase', className)}
         {...props}
       />
     )

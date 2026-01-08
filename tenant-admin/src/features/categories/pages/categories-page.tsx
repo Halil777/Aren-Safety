@@ -202,7 +202,7 @@ export function CategoriesPage() {
           <div className="h-screen w-full bg-background shadow-2xl md:w-[30%]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold uppercase">
                   {editingId
                     ? t('categories.form.editTitle', { defaultValue: 'Edit category' })
                     : t('categories.form.createTitle', { defaultValue: 'Add category' })}

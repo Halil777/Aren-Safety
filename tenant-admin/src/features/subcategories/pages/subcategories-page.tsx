@@ -219,7 +219,7 @@ export function SubcategoriesPage() {
           <div className="h-screen w-full bg-background shadow-2xl md:w-[30%]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold uppercase">
                   {editingId
                     ? t('subcategories.form.editTitle', { defaultValue: 'Edit subcategory' })
                     : t('subcategories.form.createTitle', { defaultValue: 'Add subcategory' })}

@@ -169,7 +169,7 @@ export function LocationsPage() {
           <div className="h-screen w-full bg-background shadow-2xl md:w-[30%]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold uppercase">
                   {editingId
                     ? t("locations.form.editTitle", { defaultValue: "Edit Location" })
                     : t("locations.form.createTitle", { defaultValue: "Add Location" })}

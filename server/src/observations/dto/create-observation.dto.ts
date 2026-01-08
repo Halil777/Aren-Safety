@@ -48,6 +48,10 @@ export class CreateObservationDto {
   @IsUUID()
   subcategoryId?: string;
 
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
+
   @IsUUID()
   supervisorId: string;
 

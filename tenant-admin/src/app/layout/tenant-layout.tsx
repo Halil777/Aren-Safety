@@ -339,7 +339,7 @@ function Sidebar({
                         "rounded-xl bg-muted/50 shadow-sm transition-all overflow-hidden",
                         isGroupOpen
                           ? "mt-1 space-y-1 p-2 opacity-100"
-                          : "max-h-0 p-0 opacity-0 pointer-events-none"
+                          : "max-h-0 p-0 mt-1 opacity-0 pointer-events-none"
                       )}
                     >
                       {item.children?.map((child) => (

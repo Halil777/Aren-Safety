@@ -180,7 +180,7 @@ export function ProjectsListPage() {
           <div className="h-full w-full bg-background shadow-2xl md:w-1/2">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold uppercase">
                   {editingProject
                     ? t("projects.form.editTitle", {
                         defaultValue: "Edit project",

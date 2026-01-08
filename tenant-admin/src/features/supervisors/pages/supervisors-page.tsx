@@ -6,7 +6,6 @@ import {
   ShieldPlus,
   Pencil,
   Trash2,
-  MoreHorizontal,
   ArrowUpDown,
   CheckCircle2,
   XCircle,
@@ -32,14 +31,6 @@ import type { Supervisor, SupervisorInput } from "../types/supervisor";
 
 // shadcn/ui (recommended for premium feel)
 import { Badge } from "@/shared/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -534,9 +525,9 @@ export function SupervisorsPage() {
             <Separator />
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="min-w-full">
-                <thead className="bg-muted/40">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted/50">
                   <tr>
                     <ThButton
                       onClick={() => toggleSort("name")}
@@ -583,7 +574,7 @@ export function SupervisorsPage() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-border bg-background">
+                <tbody className="divide-y divide-border">
                   {isLoading ? (
                     <SkeletonRows />
                   ) : error ? (
@@ -629,7 +620,7 @@ export function SupervisorsPage() {
                       return (
                         <tr
                           key={row.id}
-                          className="group transition hover:bg-muted/30"
+                          className="transition hover:bg-muted/40"
                         >
                           <Td className="font-medium">
                             <div className="flex items-center gap-2">
@@ -677,65 +668,51 @@ export function SupervisorsPage() {
                           </Td>
 
                           <Td className="text-right">
-                            <div className="flex justify-end">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    type="button"
-                                    size="icon"
-                                    variant="ghost"
-                                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                                    aria-label="Row actions"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-
-                                <DropdownMenuContent
-                                  align="end"
-                                  className="w-48"
-                                >
-                                  <DropdownMenuLabel>
-                                    {t("common.actions", {
-                                      defaultValue: "Actions",
-                                    })}
-                                  </DropdownMenuLabel>
-                                  <DropdownMenuSeparator />
-
-                                  <DropdownMenuItem
-                                    onClick={() => handleOpenDrawer(row)}
-                                  >
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    {t("common.edit", { defaultValue: "Edit" })}
-                                  </DropdownMenuItem>
-
-                                  <DropdownMenuItem
-                                    onClick={() => toggleStatus(row)}
-                                    disabled={updateMutation.isPending}
-                                  >
-                                    <Power className="mr-2 h-4 w-4" />
-                                    {row.isActive
-                                      ? t("supervisors.actions.deactivate", {
-                                          defaultValue: "Deactivate",
-                                        })
-                                      : t("supervisors.actions.activate", {
-                                          defaultValue: "Activate",
-                                        })}
-                                  </DropdownMenuItem>
-
-                                  <DropdownMenuSeparator />
-
-                                  <DropdownMenuItem
-                                    onClick={() => openDeleteDialog(row)}
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    {t("common.delete", {
-                                      defaultValue: "Delete",
-                                    })}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDrawer(row)}
+                                className="rounded-md border border-border bg-background p-2 text-muted-foreground transition hover:text-foreground"
+                                aria-label={t("common.edit", {
+                                  defaultValue: "Edit",
+                                })}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => toggleStatus(row)}
+                                disabled={updateMutation.isPending}
+                                className="rounded-md border border-border bg-background p-2 text-muted-foreground transition hover:text-foreground disabled:opacity-50"
+                                aria-label={
+                                  row.isActive
+                                    ? t("supervisors.actions.deactivate", {
+                                        defaultValue: "Deactivate",
+                                      })
+                                    : t("supervisors.actions.activate", {
+                                        defaultValue: "Activate",
+                                      })
+                                }
+                              >
+                                <Power
+                                  className={cn(
+                                    "h-4 w-4",
+                                    row.isActive
+                                      ? "text-emerald-600"
+                                      : "text-amber-600"
+                                  )}
+                                />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openDeleteDialog(row)}
+                                className="rounded-md border border-border bg-background p-2 text-muted-foreground transition hover:text-destructive"
+                                aria-label={t("common.delete", {
+                                  defaultValue: "Delete",
+                                })}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
                             </div>
                           </Td>
                         </tr>
@@ -755,7 +732,7 @@ export function SupervisorsPage() {
               <div className="border-b border-border px-4 py-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 className="truncate text-lg font-semibold">
+                    <h2 className="truncate text-lg font-semibold uppercase">
                       {editingId
                         ? t("supervisors.form.editTitle", {
                             defaultValue: "Edit Supervisor",

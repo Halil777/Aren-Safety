@@ -11,6 +11,7 @@ import { useCategoriesQuery } from "@/features/categories/api/hooks";
 import { useSubcategoriesQuery } from "@/features/subcategories/api/hooks";
 import { useSupervisorsQuery } from "@/features/supervisors/api/hooks";
 import { useLocationsQuery } from "@/features/locations/api/hooks";
+import { useTypesQuery } from "@/features/types/api/hooks";
 import {
   useAddObservationMediaMutation,
   useCreateObservationMutation,
@@ -41,6 +42,7 @@ export function ObservationsPage() {
   const categoriesQuery = useCategoriesQuery("observation");
   const subcategoriesQuery = useSubcategoriesQuery("observation");
   const supervisorsQuery = useSupervisorsQuery();
+  const typesQuery = useTypesQuery();
   const observationsQuery = useObservationsQuery();
   const createMutation = useCreateObservationMutation();
   const updateMutation = useUpdateObservationMutation();
@@ -58,6 +60,7 @@ export function ObservationsPage() {
     departmentId: "",
     categoryId: "",
     subcategoryId: "",
+    branchId: "",
     workerFullName: "",
     workerProfession: "",
     riskLevel: 1,
@@ -82,6 +85,9 @@ export function ObservationsPage() {
     locationsQuery.data?.filter(
       (loc) => loc.projectId === formState.projectId
     ) ?? [];
+  const filteredBranches =
+    typesQuery.data?.filter((type) => type.projectId === formState.projectId) ??
+    [];
 
   const handleOpenDrawer = (row?: Observation) => {
     if (row) {
@@ -95,6 +101,7 @@ export function ObservationsPage() {
         departmentId: row.departmentId,
         categoryId: row.categoryId,
         subcategoryId: row.subcategoryId,
+        branchId: row.branchId ?? "",
         workerFullName: row.workerFullName,
         workerProfession: row.workerProfession,
         riskLevel: row.riskLevel,
@@ -116,6 +123,7 @@ export function ObservationsPage() {
         departmentId: "",
         categoryId: "",
         subcategoryId: "",
+        branchId: "",
         workerFullName: "",
         workerProfession: "",
         riskLevel: 1,
@@ -171,6 +179,7 @@ export function ObservationsPage() {
       departmentId: formState.departmentId,
       categoryId: formState.categoryId,
       subcategoryId: formState.subcategoryId,
+      branchId: formState.branchId || undefined,
       workerFullName: formState.workerFullName,
       workerProfession: formState.workerProfession,
       riskLevel: formState.riskLevel,
@@ -422,7 +431,7 @@ export function ObservationsPage() {
           <div className="h-screen w-full bg-background shadow-2xl md:w-[40%]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold uppercase">
                   {editingId
                     ? t("observations.form.editTitle", {
                         defaultValue: "Edit Observation",
@@ -518,6 +527,7 @@ export function ObservationsPage() {
                           ...s,
                           projectId: e.target.value,
                           locationId: "",
+                          branchId: "",
                         }))
                       }
                       className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
@@ -565,36 +575,71 @@ export function ObservationsPage() {
                   </Field>
                 </TwoCol>
 
-                <Field
-                  label={t("observations.form.location", {
-                    defaultValue: "Location",
-                  })}
-                >
-                  <select
-                    value={formState.locationId}
-                    onChange={(e) =>
-                      setFormState((s) => ({
-                        ...s,
-                        locationId: e.target.value,
-                      }))
-                    }
-                    disabled={!formState.projectId}
-                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                <TwoCol>
+                  <Field
+                    label={t("observations.form.branch", {
+                      defaultValue: "Branch",
+                    })}
+                    required
                   >
-                    <option value="">
-                      {t("observations.form.locationPlaceholder", {
-                        defaultValue: formState.projectId
-                          ? "Select location"
-                          : "Select project first",
-                      })}
-                    </option>
-                    {filteredLocations.map((location) => (
-                      <option key={location.id} value={location.id}>
-                        {location.name}
+                    <select
+                      required
+                      value={formState.branchId}
+                      onChange={(e) =>
+                        setFormState((s) => ({
+                          ...s,
+                          branchId: e.target.value,
+                        }))
+                      }
+                      disabled={!formState.projectId}
+                      className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    >
+                      <option value="">
+                        {t("observations.form.branchPlaceholder", {
+                          defaultValue: formState.projectId
+                            ? "Select branch"
+                            : "Select project first",
+                        })}
                       </option>
-                    ))}
-                  </select>
-                </Field>
+                      {filteredBranches.map((branch) => (
+                        <option key={branch.id} value={branch.id}>
+                          {branch.typeName}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+
+                  <Field
+                    label={t("observations.form.location", {
+                      defaultValue: "Location",
+                    })}
+                  >
+                    <select
+                      value={formState.locationId}
+                      onChange={(e) =>
+                        setFormState((s) => ({
+                          ...s,
+                          locationId: e.target.value,
+                        }))
+                      }
+                      disabled={!formState.projectId}
+                      className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    >
+                      <option value="">
+                        {t("observations.form.locationPlaceholder", {
+                          defaultValue: formState.projectId
+                            ? "Select location"
+                            : "Select project first",
+                        })}
+                      </option>
+                      {filteredLocations.map((location) => (
+                        <option key={location.id} value={location.id}>
+                          {location.name}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </TwoCol>
 
                 <TwoCol>
                   <Field
@@ -841,6 +886,7 @@ export function ObservationsPage() {
                       !formState.departmentId ||
                       !formState.categoryId ||
                       !formState.subcategoryId ||
+                      !formState.branchId ||
                       !formState.workerFullName ||
                       !formState.workerProfession ||
                       !formState.deadlineDate ||
@@ -866,7 +912,7 @@ export function ObservationsPage() {
           <div className="h-full w-full max-w-md overflow-y-auto bg-background p-6 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold uppercase">
                   {t("observations.drawer.viewTitle", {
                     defaultValue: "Observation details",
                   })}
@@ -900,6 +946,14 @@ export function ObservationsPage() {
                 value={
                   detailObservation.location?.name ||
                   locationsQuery.data?.find((l) => l.id === detailObservation.locationId)?.name ||
+                  t("common.noData", { defaultValue: "N/A" })
+                }
+              />
+              <DetailRow
+                label={t("observations.form.branch", { defaultValue: "Branch" })}
+                value={
+                  detailObservation.branch?.typeName ||
+                  typesQuery.data?.find((b) => b.id === detailObservation.branchId)?.typeName ||
                   t("common.noData", { defaultValue: "N/A" })
                 }
               />
@@ -996,6 +1050,7 @@ type ObservationForm = {
   departmentId: string;
   categoryId: string;
   subcategoryId: string;
+  branchId: string;
   workerFullName: string;
   workerProfession: string;
   riskLevel: number;

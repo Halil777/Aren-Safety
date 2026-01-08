@@ -14,6 +14,7 @@ export type Observation = {
   departmentId: string
   categoryId: string
   subcategoryId: string
+  branchId?: string | null
   createdByUserId: string
   supervisorId: string
   companyId?: string | null
@@ -30,6 +31,7 @@ export type Observation = {
   department?: { id: string; name: string }
   category?: { id: string; categoryName: string }
   subcategory?: { id: string; subcategoryName: string }
+  branch?: { id: string; typeName: string }
   createdBy?: { id: string; fullName: string }
   supervisor?: { id: string; fullName: string }
   company?: { id: string; companyName: string } | null
@@ -44,6 +46,7 @@ export type ObservationInput = {
   departmentId: string
   categoryId: string
   subcategoryId: string
+  branchId?: string | null
   supervisorId: string
   companyId?: string | null
   workerFullName: string

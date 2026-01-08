@@ -40,7 +40,7 @@ export function TenantsTable({
   }
 
   if (!tenants || tenants.length === 0) {
-    return <StateBlock dashed>{t('tenant.table.empty')}</StateBlock>
+    return <StateBlock $dashed>{t('tenant.table.empty')}</StateBlock>
   }
 
   return (
@@ -225,7 +225,7 @@ const IconButton = styled.button<{ disabled?: boolean }>`
   }
 `
 
-const StateBlock = styled.div<{ dashed?: boolean }>`
+const StateBlock = styled.div<{ $dashed?: boolean }>`
   height: 10rem;
   display: flex;
   align-items: center;
@@ -234,6 +234,6 @@ const StateBlock = styled.div<{ dashed?: boolean }>`
   color: ${({ theme }) => theme.colors.muted};
   background: ${({ theme }) => theme.colors.card};
   border-radius: ${({ theme }) => theme.radii.lg};
-  border: ${({ dashed, theme }) =>
-    dashed ? `1px dashed ${theme.colors.border}` : 'none'};
+  border: ${({ $dashed, theme }) =>
+    $dashed ? `1px dashed ${theme.colors.border}` : 'none'};
 `

@@ -22,6 +22,7 @@ import { MobileRole } from '../mobile-accounts/mobile-role';
 import { CategoryType } from '../categories/category-type';
 import { Company } from '../companies/company.entity';
 import { AnswerObservationDto } from './dto/answer-observation.dto';
+import { TypeEntity } from '../types/type.entity';
 
 @Injectable()
 export class ObservationsService {
@@ -44,6 +45,8 @@ export class ObservationsService {
     private readonly subcategoriesRepository: Repository<Subcategory>,
     @InjectRepository(Company)
     private readonly companiesRepository: Repository<Company>,
+    @InjectRepository(TypeEntity)
+    private readonly typesRepository: Repository<TypeEntity>,
   ) {}
 
   async create(tenantId: string, creatorId: string, dto: CreateObservationDto) {
@@ -65,6 +68,7 @@ export class ObservationsService {
     const subcategory = dto.subcategoryId
       ? await this.findSubcategory(dto.subcategoryId, tenantId, category.id)
       : null;
+    const branch = dto.branchId ? await this.findBranch(dto.branchId, tenantId, project.id) : null;
 
     const deadline = this.parseDate(dto.deadline, 'deadline');
 
@@ -81,6 +85,7 @@ export class ObservationsService {
       categoryId: category.id,
       subcategoryId: subcategory?.id ?? null,
       companyId: company?.id ?? null,
+      branchId: branch?.id ?? null,
     });
 
     const saved = await this.observationsRepository.save(observation);
@@ -118,6 +123,7 @@ export class ObservationsService {
         'department',
         'category',
         'subcategory',
+        'branch',
         'company',
         'createdBy',
         'supervisor',
@@ -140,6 +146,7 @@ export class ObservationsService {
         'department',
         'category',
         'subcategory',
+        'branch',
         'company',
         'supervisor',
         'createdBy',
@@ -159,6 +166,7 @@ export class ObservationsService {
         'department',
         'category',
         'subcategory',
+        'branch',
         'company',
         'supervisor',
         'createdBy',
@@ -404,6 +412,16 @@ export class ObservationsService {
     return subcategory;
   }
 
+  private async findBranch(branchId: string, tenantId: string, projectId: string) {
+    const branch = await this.typesRepository.findOne({
+      where: { id: branchId, tenantId, projectId },
+    });
+    if (!branch) {
+      throw new NotFoundException('Branch not found for project');
+    }
+    return branch;
+  }
+
   private parseDate(value: string, field: string) {
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) {
@@ -437,6 +455,7 @@ export class ObservationsService {
       departmentId: observation.departmentId,
       categoryId: observation.categoryId,
       subcategoryId: observation.subcategoryId,
+      branchId: observation.branchId,
       supervisorId: observation.supervisorId,
       createdByUserId: observation.createdByUserId,
       companyId: observation.companyId,
@@ -445,6 +464,7 @@ export class ObservationsService {
       departmentName: observation.department?.name,
       categoryName: (observation.category as any)?.categoryName,
       subcategoryName: (observation.subcategory as any)?.subcategoryName,
+      branchName: (observation.branch as any)?.typeName,
       companyName: observation.company ? (observation.company as any).companyName : null,
       supervisorName: observation.supervisor?.fullName,
       createdByName: observation.createdBy?.fullName,

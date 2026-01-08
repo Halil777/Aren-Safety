@@ -370,7 +370,7 @@ export function TasksPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
           <div className="w-full max-w-3xl rounded-lg bg-background p-6 shadow-lg">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-lg font-semibold uppercase">
                 {editingId
                   ? t("tasks.drawer.editTitle", { defaultValue: "Edit Task" })
                   : t("tasks.drawer.createTitle", { defaultValue: "New Task" })}
@@ -705,7 +705,7 @@ export function TasksPage() {
           <div className="h-full w-full max-w-md overflow-y-auto bg-background p-6 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold uppercase">
                   {t("tasks.drawer.viewTitle", { defaultValue: "Task details" })}
                 </h3>
                 <p className="text-sm text-muted-foreground">

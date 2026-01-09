@@ -15,7 +15,16 @@ export async function updateObservation(id: string, data: Partial<ObservationInp
 }
 
 export async function deleteObservation(id: string) {
-  return apiClient.delete<unknown>(ROUTES.OBSERVATIONS.DETAIL(id))
+  try {
+    return await apiClient.delete<unknown>(ROUTES.OBSERVATIONS.DETAIL(id))
+  } catch (error) {
+    const status = (error as { status?: number }).status
+    // Treat missing rows as already-deleted so UI stays in sync even if backend row is gone.
+    if (status === 404) {
+      return undefined
+    }
+    throw error
+  }
 }
 
 export type ObservationMediaPayload = {

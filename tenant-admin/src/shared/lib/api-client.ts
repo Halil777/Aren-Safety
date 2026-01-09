@@ -36,7 +36,9 @@ export class ApiClient {
           logout()
         }
         const error = await response.json().catch(() => ({}))
-        throw new Error(error.message || 'Request failed')
+        const err = new Error(error.message || 'Request failed') as Error & { status?: number }
+        err.status = response.status
+        throw err
       }
 
       if (response.status === 204) {

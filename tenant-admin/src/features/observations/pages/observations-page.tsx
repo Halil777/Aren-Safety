@@ -247,14 +247,17 @@ export function ObservationsPage() {
       <Card>
         <CardContent className="space-y-4">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border">
-              <thead className="bg-muted/50">
-                <tr>
-                  <Th>
-                    {t("observations.table.project", {
-                      defaultValue: "Project",
-                    })}
-                  </Th>
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <Th className="w-12 text-center">
+                      {t("common.id", { defaultValue: "ID" })}
+                    </Th>
+                    <Th>
+                      {t("observations.table.project", {
+                        defaultValue: "Project",
+                      })}
+                    </Th>
                   <Th>
                     {t("observations.table.location", { defaultValue: "Area" })}
                   </Th>
@@ -295,7 +298,7 @@ export function ObservationsPage() {
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="px-4 py-6 text-center text-sm text-muted-foreground"
                     >
                       {t("common.loading", { defaultValue: "Loading..." })}
@@ -304,7 +307,7 @@ export function ObservationsPage() {
                 ) : error ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="px-4 py-6 text-center text-sm text-destructive"
                     >
                       {error.message}
@@ -313,7 +316,7 @@ export function ObservationsPage() {
                 ) : rows.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="px-4 py-6 text-center text-sm text-muted-foreground"
                     >
                       {t("observations.table.empty", {
@@ -322,12 +325,13 @@ export function ObservationsPage() {
                     </td>
                   </tr>
                 ) : (
-                  rows.map((row) => (
+                  rows.map((row, index) => (
                     <tr
                       key={row.id}
                       className="hover:bg-muted/40 cursor-pointer"
                       onClick={() => setDetailObservation(row)}
                     >
+                      <Td className="text-center font-semibold">{index + 1}</Td>
                       <Td>
                         {row.project?.name ||
                           projectsQuery.data?.find(

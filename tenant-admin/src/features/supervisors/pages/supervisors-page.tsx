@@ -1,7 +1,6 @@
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
-  FileSpreadsheet,
   Search,
   ShieldPlus,
   Pencil,
@@ -78,13 +77,6 @@ export function SupervisorsPage() {
     return () => window.clearTimeout(id);
   }, [searchTerm]);
 
-  // filters
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
-  const [projectFilter, setProjectFilter] = useState<string>("all");
-
   // sorting
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -117,37 +109,10 @@ export function SupervisorsPage() {
     return map;
   }, [projectsQuery.data]);
 
-  const stats = useMemo(() => {
-    const total = rows.length;
-    const active = rows.filter((r) => r.isActive).length;
-    const inactive = total - active;
-    return { total, active, inactive };
-  }, [rows]);
-
   const filteredRows = useMemo(() => {
     const term = debouncedSearch.trim().toLowerCase();
 
     let out = rows;
-
-    // status filter
-    if (statusFilter !== "all") {
-      out = out.filter((r) =>
-        statusFilter === "active" ? r.isActive : !r.isActive
-      );
-    }
-
-    // department filter
-    if (departmentFilter !== "all") {
-      out = out.filter((r) => (r.departmentId ?? "") === departmentFilter);
-    }
-
-    // project filter
-    if (projectFilter !== "all") {
-      out = out.filter((r) => {
-        const ids = r.projects?.map((p) => p.id) ?? r.projectIds ?? [];
-        return ids.includes(projectFilter);
-      });
-    }
 
     // search
     if (term) {
@@ -198,9 +163,6 @@ export function SupervisorsPage() {
   }, [
     rows,
     debouncedSearch,
-    statusFilter,
-    departmentFilter,
-    projectFilter,
     sortKey,
     sortDir,
     departmentNameById,
@@ -302,59 +264,6 @@ export function SupervisorsPage() {
     await updateMutation.mutateAsync({ id: row.id, data: payload });
   };
 
-  const handleExport = async () => {
-    if (!filteredRows.length) return;
-
-    try {
-      const XLSX = await import("xlsx");
-      const today = new Date().toISOString().split("T")[0];
-
-      const data = filteredRows.map((row) => {
-        const departmentName =
-          row.department?.name ||
-          (row.departmentId ? departmentNameById.get(row.departmentId) : "") ||
-          "";
-        const projectNames =
-          row.projects?.map((p) => p.name).join(", ") ||
-          (row.projectIds ?? [])
-            .map((pid) => projectNameById.get(pid) ?? "")
-            .filter(Boolean)
-            .join(", ");
-
-        return {
-          [t("supervisors.table.name", { defaultValue: "Name" })]: row.fullName,
-          [t("supervisors.table.login", { defaultValue: "Login" })]: row.login,
-          [t("supervisors.table.department", { defaultValue: "Department" })]:
-            departmentName,
-          [t("supervisors.table.projects", { defaultValue: "Projects" })]:
-            projectNames,
-          [t("supervisors.table.status", { defaultValue: "Status" })]:
-            row.isActive
-              ? t("common.active", { defaultValue: "Active" })
-              : t("common.inactive", { defaultValue: "Inactive" }),
-          [t("supervisors.table.phone", { defaultValue: "Phone" })]:
-            row.phoneNumber,
-          [t("supervisors.table.email", { defaultValue: "Email" })]:
-            row.email ?? "",
-          [t("supervisors.form.profession", { defaultValue: "Profession" })]:
-            row.profession ?? "",
-        };
-      });
-
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Supervisors");
-      XLSX.writeFile(workbook, `supervisors_${today}.xlsx`);
-    } catch (err) {
-      console.error("Failed to export supervisors", err);
-      window.alert(
-        t("supervisors.exportError", {
-          defaultValue: "Failed to export supervisors.",
-        })
-      );
-    }
-  };
-
   const toggleSort = (key: SortKey) => {
     if (sortKey !== key) {
       setSortKey(key);
@@ -374,16 +283,6 @@ export function SupervisorsPage() {
           })}
           actions={
             <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleExport}
-                disabled={isLoading || filteredRows.length === 0}
-              >
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                {t("supervisors.actions.export", { defaultValue: "Export" })}
-              </Button>
-
               <Button type="button" onClick={() => handleOpenDrawer()}>
                 <ShieldPlus className="mr-2 h-4 w-4" />
                 {t("supervisors.actions.add", {
@@ -394,132 +293,24 @@ export function SupervisorsPage() {
           }
         />
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <StatCard
-            title={t("common.total", { defaultValue: "Total" })}
-            value={stats.total}
-          />
-          <StatCard
-            title={t("common.active", { defaultValue: "Active" })}
-            value={stats.active}
-            icon={<CheckCircle2 className="h-4 w-4" />}
-          />
-          <StatCard
-            title={t("common.inactive", { defaultValue: "Inactive" })}
-            value={stats.inactive}
-            icon={<XCircle className="h-4 w-4" />}
-          />
-        </div>
-
         <Card className="shadow-sm">
           <CardContent className="space-y-4">
-            {/* Search + Filters */}
+            {/* Search */}
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
-                <label className="relative w-full md:max-w-md">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={t("supervisors.searchPlaceholder", {
-                      defaultValue: "Search supervisors...",
-                    })}
-                    aria-label={t("supervisors.searchPlaceholder", {
-                      defaultValue: "Search supervisors...",
-                    })}
-                    className="pl-9"
-                  />
-                </label>
-
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 md:flex md:gap-2">
-                  <FilterSelect
-                    value={statusFilter}
-                    onChange={(v) => setStatusFilter(v as any)}
-                    ariaLabel="Status filter"
-                    options={[
-                      {
-                        value: "all",
-                        label: t("common.all", { defaultValue: "All" }),
-                      },
-                      {
-                        value: "active",
-                        label: t("common.active", { defaultValue: "Active" }),
-                      },
-                      {
-                        value: "inactive",
-                        label: t("common.inactive", {
-                          defaultValue: "Inactive",
-                        }),
-                      },
-                    ]}
-                  />
-
-                  <FilterSelect
-                    value={departmentFilter}
-                    onChange={setDepartmentFilter}
-                    ariaLabel="Department filter"
-                    options={[
-                      {
-                        value: "all",
-                        label: t("supervisors.filters.allDepartments", {
-                          defaultValue: "All departments",
-                        }),
-                      },
-                      ...(departmentsQuery.data ?? []).map((d) => ({
-                        value: d.id,
-                        label: d.name,
-                      })),
-                    ]}
-                  />
-
-                  <FilterSelect
-                    value={projectFilter}
-                    onChange={setProjectFilter}
-                    ariaLabel="Project filter"
-                    options={[
-                      {
-                        value: "all",
-                        label: t("supervisors.filters.allProjects", {
-                          defaultValue: "All projects",
-                        }),
-                      },
-                      ...(projectsQuery.data ?? []).map((p) => ({
-                        value: p.id,
-                        label: p.name,
-                      })),
-                    ]}
-                  />
-                </div>
-              </div>
-
-              {/* Sub info */}
-              <div className="flex items-center justify-between gap-2 md:justify-end">
-                <span className="text-sm text-muted-foreground">
-                  {t("supervisors.table.showing", { defaultValue: "Showing" })}{" "}
-                  <span className="font-medium text-foreground">
-                    {filteredRows.length}
-                  </span>{" "}
-                  {t("supervisors.table.of", { defaultValue: "of" })}{" "}
-                  <span className="font-medium text-foreground">
-                    {rows.length}
-                  </span>
-                </span>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setStatusFilter("all");
-                    setDepartmentFilter("all");
-                    setProjectFilter("all");
-                  }}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  {t("common.reset", { defaultValue: "Reset" })}
-                </Button>
-              </div>
+              <label className="relative w-full md:max-w-md">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={t("supervisors.searchPlaceholder", {
+                    defaultValue: "Search supervisors...",
+                  })}
+                  aria-label={t("supervisors.searchPlaceholder", {
+                    defaultValue: "Search supervisors...",
+                  })}
+                  className="pl-9"
+                />
+              </label>
             </div>
 
             <Separator />
@@ -1214,32 +1005,6 @@ function SkeletonRows() {
   );
 }
 
-function StatCard({
-  title,
-  value,
-  icon,
-}: {
-  title: string;
-  value: number;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <Card className="shadow-sm">
-      <CardContent className="flex items-center justify-between gap-3 py-4">
-        <div>
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {title}
-          </div>
-          <div className="mt-1 text-2xl font-semibold">{value}</div>
-        </div>
-        <div className="grid h-10 w-10 place-items-center rounded-full bg-muted text-muted-foreground">
-          {icon ?? <span className="text-sm font-semibold">#</span>}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function Section({
   title,
   children,
@@ -1254,32 +1019,5 @@ function Section({
       </div>
       <div className="space-y-4">{children}</div>
     </div>
-  );
-}
-
-function FilterSelect({
-  value,
-  onChange,
-  options,
-  ariaLabel,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  ariaLabel: string;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <select
-      aria-label={ariaLabel}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:w-[180px]"
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
   );
 }

@@ -1,13 +1,7 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import {
   Calendar,
-  AlertTriangle,
-  CheckCircle2,
   RotateCcw,
-  ChartPie,
-  Building2,
-  Tags,
-  MapPin,
   Users,
   ChevronLeft,
   ChevronRight,
@@ -16,6 +10,7 @@ import {
   FileImage,
   FileText,
   ChevronDown,
+  CheckCircle2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,15 +20,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { useObservationsQuery } from "@/features/observations/api/hooks";
-import { CHART_COLORS, buildStatusCardConfig } from "./dashboard-constants";
+import { useTasksQuery } from "@/features/tasks/api/hooks";
 import {
   ResponsiveContainer,
-  ComposedChart,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
+  ComposedChart,
   AreaChart,
   Area,
   LineChart,
@@ -43,233 +35,226 @@ import {
   PieChart,
   Pie,
   Cell,
+  BarChart,
+  Bar,
 } from "recharts";
+import { CHART_COLORS, buildStatusCardConfig } from "./dashboard-constants";
 
 type DateRange = {
   startDate: string;
   endDate: string;
 };
 
-export function ObservationsDashboard() {
+export function TasksDashboard() {
   const { t } = useTranslation();
-  const { data: observations, isLoading } = useObservationsQuery();
-  const [dateRange, setDateRange] = useState<DateRange>({
+  const { data: tasks, isLoading } = useTasksQuery();
+  // Tasks Dashboard State
+  const [taskDateRange, setTaskDateRange] = useState<DateRange>({
     startDate: "",
     endDate: "",
   });
-  const [selectedRiskLevel, setSelectedRiskLevel] = useState<number | "all">(
-    "all"
-  );
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [selectedCharts, setSelectedCharts] = useState<string[]>([]);
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const dashboardRef = useRef<HTMLDivElement>(null);
-  const exportRef = useRef<HTMLDivElement>(null);
+  const [selectedTaskCreator, setSelectedTaskCreator] = useState<
+    string | "all"
+  >("all");
+  const [currentTaskSlide, setCurrentTaskSlide] = useState(0);
+  const [isTaskPaused, setIsTaskPaused] = useState(false);
+  const [selectedTaskCharts, setSelectedTaskCharts] = useState<string[]>([]);
+  const [showTaskExportMenu, setShowTaskExportMenu] = useState(false);
+  const taskExportRef = useRef<HTMLDivElement>(null);
 
-  const chartOptions = [
-    {
-      id: "projects",
-      label: t("dashboard.observationsByProject"),
-      icon: <ChartPie className="h-4 w-4" />,
-    },
-    {
-      id: "departments",
-      label: t("dashboard.observationsByDepartment"),
-      icon: <Building2 className="h-4 w-4" />,
-    },
-    {
-      id: "categories",
-      label:
-        t("dashboard.observationsByCategory") || "Observations by Category",
-      icon: <Tags className="h-4 w-4" />,
-    },
-    {
-      id: "locations",
-      label: t("dashboard.observationsByLocation"),
-      icon: <MapPin className="h-4 w-4" />,
-    },
-    {
-      id: "supervisors",
-      label: t("dashboard.top5Supervisors"),
-      icon: <Users className="h-4 w-4" />,
-    },
-  ];
+  const statusCardConfig = useMemo(() => buildStatusCardConfig(t), [t]);
 
-  const toggleChart = (chartId: string) => {
-    setSelectedCharts((prev) =>
-      prev.includes(chartId)
-        ? prev.filter((id) => id !== chartId)
-        : [...prev, chartId]
-    );
-  };
+  // ========== TASKS CALCULATIONS ==========
 
-  // Filter observations based on date range and risk level
-  const filteredObservations = useMemo(() => {
-    if (!observations) return [];
+  // Filter tasks based on date range and task creator
+  const filteredTasks = useMemo(() => {
+    if (!tasks) return [];
 
-    let filtered = observations;
+    let filtered = tasks;
 
-    if (dateRange.startDate) {
-      filtered = filtered.filter((obs) => {
-        const createdAt = obs.createdAt ? new Date(obs.createdAt) : null;
-        return createdAt && createdAt >= new Date(dateRange.startDate);
+    if (taskDateRange.startDate) {
+      filtered = filtered.filter((task) => {
+        const createdAt = task.createdAt ? new Date(task.createdAt) : null;
+        return createdAt && createdAt >= new Date(taskDateRange.startDate);
       });
     }
 
-    if (dateRange.endDate) {
-      filtered = filtered.filter((obs) => {
-        const createdAt = obs.createdAt ? new Date(obs.createdAt) : null;
-        return createdAt && createdAt <= new Date(dateRange.endDate);
+    if (taskDateRange.endDate) {
+      filtered = filtered.filter((task) => {
+        const createdAt = task.createdAt ? new Date(task.createdAt) : null;
+        return createdAt && createdAt <= new Date(taskDateRange.endDate);
       });
     }
 
-    if (selectedRiskLevel !== "all") {
-      filtered = filtered.filter((obs) => obs.riskLevel === selectedRiskLevel);
+    if (selectedTaskCreator !== "all") {
+      filtered = filtered.filter(
+        (task) => task.createdByUserId === selectedTaskCreator
+      );
     }
 
     return filtered;
-  }, [observations, dateRange, selectedRiskLevel]);
+  }, [tasks, taskDateRange, selectedTaskCreator]);
 
-  // Status card configuration
-  const statusCardConfig = useMemo(() => buildStatusCardConfig(t), [t]);
+  // Task creators for filter dropdown
+  const taskCreators = useMemo(() => {
+    if (!tasks) return [];
+    const creatorsMap = new Map<string, { id: string; name: string }>();
+    tasks.forEach((task) => {
+      if (task.createdBy) {
+        creatorsMap.set(task.createdBy.id, {
+          id: task.createdBy.id,
+          name: task.createdBy.fullName,
+        });
+      }
+    });
+    return Array.from(creatorsMap.values());
+  }, [tasks]);
 
-  // Calculate stats by status
-  const statusStats = useMemo(() => {
+  // Task status stats
+  const taskStatusStats = useMemo(() => {
     const stats = statusCardConfig.map((config) => ({
       ...config,
-      count: filteredObservations.filter((obs) => obs.status === config.status)
+      count: filteredTasks.filter((task) => task.status === config.status)
         .length,
     }));
-
-    // Filter to only show cards with count > 0
     return stats.filter((stat) => stat.count > 0);
-  }, [filteredObservations, statusCardConfig]);
+  }, [filteredTasks, statusCardConfig]);
 
-  // Dynamic total slides based on status cards
-  const totalSlides = statusStats.length;
+  const totalTaskSlides = taskStatusStats.length;
 
-  // Department data for chart
-  const departmentData = useMemo(() => {
-    const departmentMap = new Map<string, number>();
-
-    filteredObservations.forEach((obs) => {
-      const deptName = obs.department?.name || "Unknown";
-      departmentMap.set(deptName, (departmentMap.get(deptName) || 0) + 1);
-    });
-
-    return Array.from(departmentMap.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [filteredObservations]);
-
-  // Project data for chart
-  const projectData = useMemo(() => {
+  // Task data by project
+  const taskProjectData = useMemo(() => {
     const projectMap = new Map<string, number>();
-
-    filteredObservations.forEach((obs) => {
-      const projectName = obs.project?.name || "Unknown";
+    filteredTasks.forEach((task) => {
+      const projectName = task.project?.name || "Unknown";
       projectMap.set(projectName, (projectMap.get(projectName) || 0) + 1);
     });
-
     return Array.from(projectMap.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
-  }, [filteredObservations]);
+  }, [filteredTasks]);
 
-  // Location data
-  const locationData = useMemo(() => {
-    const locationMap = new Map<string, number>();
-
-    filteredObservations.forEach((obs) => {
-      const locationName = obs.location?.name || "Unknown";
-      locationMap.set(locationName, (locationMap.get(locationName) || 0) + 1);
+  // Task data by department
+  const taskDepartmentData = useMemo(() => {
+    const departmentMap = new Map<string, number>();
+    filteredTasks.forEach((task) => {
+      const deptName = task.department?.name || "Unknown";
+      departmentMap.set(deptName, (departmentMap.get(deptName) || 0) + 1);
     });
-
-    return Array.from(locationMap.entries())
+    return Array.from(departmentMap.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
-  }, [filteredObservations]);
+  }, [filteredTasks]);
 
-  // Category data
-  const categoryData = useMemo(() => {
+  // Task supervisors data
+  const taskSupervisorData = useMemo(() => {
+    const supervisorMap = new Map<string, number>();
+    filteredTasks.forEach((task) => {
+      const supervisorName = task.supervisor?.fullName || "Unassigned";
+      supervisorMap.set(
+        supervisorName,
+        (supervisorMap.get(supervisorName) || 0) + 1
+      );
+    });
+    return Array.from(supervisorMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [filteredTasks]);
+
+  // Task category data
+  const taskCategoryData = useMemo(() => {
     const categoryMap = new Map<string, number>();
-
-    filteredObservations.forEach((obs) => {
-      const categoryName = obs.category?.categoryName || "Uncategorized";
+    filteredTasks.forEach((task) => {
+      const categoryName = task.category?.categoryName || "Uncategorized";
       categoryMap.set(categoryName, (categoryMap.get(categoryName) || 0) + 1);
     });
 
     return Array.from(categoryMap.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
-  }, [filteredObservations]);
+  }, [filteredTasks]);
 
-  // Top 5 Supervisors data
-  const supervisorData = useMemo(() => {
-    const supervisorMap = new Map<string, number>();
+  const taskChartOptions = [
+    {
+      id: "projects",
+      label: t("dashboard.tasksByProject") || "Tasks by Project",
+      icon: "📊",
+    },
+    {
+      id: "departments",
+      label: t("dashboard.tasksByDepartment") || "Tasks by Department",
+      icon: "🏢",
+    },
+    {
+      id: "categories",
+      label: t("Category") || "Tasks by Category",
+      icon: "🏷",
+    },
+    {
+      id: "supervisors",
+      label: t("dashboard.top5TaskSupervisors") || "Top 5 Supervisors",
+      icon: "👥",
+    },
+  ];
 
-    filteredObservations.forEach((obs) => {
-      const supervisorName = obs.supervisor?.fullName || "Unassigned";
-      supervisorMap.set(
-        supervisorName,
-        (supervisorMap.get(supervisorName) || 0) + 1
-      );
-    });
-
-    return Array.from(supervisorMap.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-  }, [filteredObservations]);
-
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDateRange((prev) => ({ ...prev, startDate: e.target.value }));
+  const toggleTaskChart = (chartId: string) => {
+    setSelectedTaskCharts((prev) =>
+      prev.includes(chartId)
+        ? prev.filter((id) => id !== chartId)
+        : [...prev, chartId]
+    );
   };
 
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDateRange((prev) => ({ ...prev, endDate: e.target.value }));
+  const handleTaskStartDateChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setTaskDateRange((prev) => ({ ...prev, startDate: e.target.value }));
   };
 
-  const resetFilters = () => {
-    setDateRange({ startDate: "", endDate: "" });
-    setSelectedRiskLevel("all");
+  const handleTaskEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTaskDateRange((prev) => ({ ...prev, endDate: e.target.value }));
   };
 
-  const goToSlide = useCallback((index: number) => {
-    setCurrentSlide(index);
+  const resetTaskFilters = () => {
+    setTaskDateRange({ startDate: "", endDate: "" });
+    setSelectedTaskCreator("all");
+  };
+
+  const goToTaskSlide = useCallback((index: number) => {
+    setCurrentTaskSlide(index);
   }, []);
 
-  const nextSlide = useCallback(() => {
-    const next = (currentSlide + 1) % totalSlides;
-    goToSlide(next);
-  }, [currentSlide, totalSlides, goToSlide]);
+  const nextTaskSlide = useCallback(() => {
+    const next = (currentTaskSlide + 1) % totalTaskSlides;
+    goToTaskSlide(next);
+  }, [currentTaskSlide, totalTaskSlides, goToTaskSlide]);
 
-  const prevSlide = useCallback(() => {
-    const prev = (currentSlide - 1 + totalSlides) % totalSlides;
-    goToSlide(prev);
-  }, [currentSlide, totalSlides, goToSlide]);
+  const prevTaskSlide = useCallback(() => {
+    const prev = (currentTaskSlide - 1 + totalTaskSlides) % totalTaskSlides;
+    goToTaskSlide(prev);
+  }, [currentTaskSlide, totalTaskSlides, goToTaskSlide]);
 
-  // Reset slide if it exceeds total slides
   useEffect(() => {
-    if (currentSlide >= totalSlides && totalSlides > 0) {
-      setCurrentSlide(0);
+    if (currentTaskSlide >= totalTaskSlides && totalTaskSlides > 0) {
+      setCurrentTaskSlide(0);
     }
-  }, [totalSlides, currentSlide]);
+  }, [totalTaskSlides, currentTaskSlide]);
 
-  // Autoplay
   useEffect(() => {
-    if (!isPaused && totalSlides > 0) {
+    if (!isTaskPaused && totalTaskSlides > 0) {
       const interval = setInterval(() => {
-        nextSlide();
+        nextTaskSlide();
       }, 3000);
 
       return () => clearInterval(interval);
     }
-  }, [isPaused, totalSlides, nextSlide]);
+  }, [isTaskPaused, totalTaskSlides, nextTaskSlide]);
 
-  // Export to Excel
-  const exportToExcel = async () => {
+  // ========== TASKS EXPORT FUNCTIONS ==========
+
+  // Export Tasks to Excel
+  const exportTasksToExcel = async () => {
     try {
       const XLSX = await import("xlsx");
 
@@ -279,54 +264,57 @@ export function ObservationsDashboard() {
       // Stats data by status
       const statsData = [
         ["Status", "Count"],
-        ...statusStats.map((stat) => [stat.label, stat.count]),
+        ...taskStatusStats.map((stat) => [stat.label, stat.count]),
         ["", ""],
-        ["Total Observations", filteredObservations.length],
+        ["Total Tasks", filteredTasks.length],
       ];
       const statsWs = XLSX.utils.aoa_to_sheet(statsData);
       XLSX.utils.book_append_sheet(wb, statsWs, "Statistics");
 
       // Add selected charts data
-      if (selectedCharts.includes("projects") && projectData.length > 0) {
+      if (
+        selectedTaskCharts.includes("projects") &&
+        taskProjectData.length > 0
+      ) {
         const projectsData = [
           ["Project", "Count"],
-          ...projectData.map((p) => [p.name, p.count]),
+          ...taskProjectData.map((p) => [p.name, p.count]),
         ];
         const projectsWs = XLSX.utils.aoa_to_sheet(projectsData);
         XLSX.utils.book_append_sheet(wb, projectsWs, "Projects");
       }
 
-      if (selectedCharts.includes("departments") && departmentData.length > 0) {
+      if (
+        selectedTaskCharts.includes("departments") &&
+        taskDepartmentData.length > 0
+      ) {
         const deptData = [
           ["Department", "Count"],
-          ...departmentData.map((d) => [d.name, d.count]),
+          ...taskDepartmentData.map((d) => [d.name, d.count]),
         ];
         const deptWs = XLSX.utils.aoa_to_sheet(deptData);
         XLSX.utils.book_append_sheet(wb, deptWs, "Departments");
       }
 
-      if (selectedCharts.includes("categories") && categoryData.length > 0) {
+      if (
+        selectedTaskCharts.includes("categories") &&
+        taskCategoryData.length > 0
+      ) {
         const catData = [
           ["Category", "Count"],
-          ...categoryData.map((c) => [c.name, c.count]),
+          ...taskCategoryData.map((c) => [c.name, c.count]),
         ];
         const catWs = XLSX.utils.aoa_to_sheet(catData);
         XLSX.utils.book_append_sheet(wb, catWs, "Categories");
       }
 
-      if (selectedCharts.includes("locations") && locationData.length > 0) {
-        const locData = [
-          ["Location", "Count"],
-          ...locationData.map((l) => [l.name, l.count]),
-        ];
-        const locWs = XLSX.utils.aoa_to_sheet(locData);
-        XLSX.utils.book_append_sheet(wb, locWs, "Locations");
-      }
-
-      if (selectedCharts.includes("supervisors") && supervisorData.length > 0) {
+      if (
+        selectedTaskCharts.includes("supervisors") &&
+        taskSupervisorData.length > 0
+      ) {
         const supData = [
           ["Supervisor", "Count"],
-          ...supervisorData.map((s) => [s.name, s.count]),
+          ...taskSupervisorData.map((s) => [s.name, s.count]),
         ];
         const supWs = XLSX.utils.aoa_to_sheet(supData);
         XLSX.utils.book_append_sheet(wb, supWs, "Supervisors");
@@ -335,22 +323,22 @@ export function ObservationsDashboard() {
       // Download
       XLSX.writeFile(
         wb,
-        `Observations_Dashboard_${new Date().toISOString().split("T")[0]}.xlsx`
+        `Tasks_Dashboard_${new Date().toISOString().split("T")[0]}.xlsx`
       );
-      setShowExportMenu(false);
+      setShowTaskExportMenu(false);
     } catch (error) {
-      console.error("Error exporting to Excel:", error);
+      console.error("Error exporting tasks to Excel:", error);
       alert("Failed to export to Excel. Please try again.");
     }
   };
 
-  // Export to JPG
-  const exportToJPG = async () => {
+  // Export Tasks to JPG
+  const exportTasksToJPG = async () => {
     try {
       const html2canvas = (await import("html2canvas")).default;
 
-      if (exportRef.current) {
-        const canvas = await html2canvas(exportRef.current, {
+      if (taskExportRef.current) {
+        const canvas = await html2canvas(taskExportRef.current, {
           scale: 2,
           logging: false,
           useCORS: true,
@@ -358,27 +346,27 @@ export function ObservationsDashboard() {
         });
 
         const link = document.createElement("a");
-        link.download = `Observations_Dashboard_${
+        link.download = `Tasks_Dashboard_${
           new Date().toISOString().split("T")[0]
         }.jpg`;
         link.href = canvas.toDataURL("image/jpeg", 0.95);
         link.click();
-        setShowExportMenu(false);
+        setShowTaskExportMenu(false);
       }
     } catch (error) {
-      console.error("Error exporting to JPG:", error);
+      console.error("Error exporting tasks to JPG:", error);
       alert("Failed to export to JPG. Please try again.");
     }
   };
 
-  // Export to PDF
-  const exportToPDF = async () => {
+  // Export Tasks to PDF
+  const exportTasksToPDF = async () => {
     try {
       const html2canvas = (await import("html2canvas")).default;
       const jsPDF = (await import("jspdf")).default;
 
-      if (exportRef.current) {
-        const canvas = await html2canvas(exportRef.current, {
+      if (taskExportRef.current) {
+        const canvas = await html2canvas(taskExportRef.current, {
           scale: 2,
           logging: false,
           useCORS: true,
@@ -394,12 +382,12 @@ export function ObservationsDashboard() {
 
         pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
         pdf.save(
-          `Observations_Dashboard_${new Date().toISOString().split("T")[0]}.pdf`
+          `Tasks_Dashboard_${new Date().toISOString().split("T")[0]}.pdf`
         );
-        setShowExportMenu(false);
+        setShowTaskExportMenu(false);
       }
     } catch (error) {
-      console.error("Error exporting to PDF:", error);
+      console.error("Error exporting tasks to PDF:", error);
       alert("Failed to export to PDF. Please try again.");
     }
   };
@@ -408,54 +396,53 @@ export function ObservationsDashboard() {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">
-          {t("dashboard.loadingObservations")}
+          {t("dashboard.loadingTasks") || "Loading tasks..."}
         </p>
       </div>
     );
   }
 
   return (
-    <div ref={dashboardRef} className="space-y-6">
+    <div className="space-y-6">
       {/* Header with Export Button */}
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight uppercase">
-          {t("dashboard.observationsDashboard")}
+          {t("dashboard.tasksDashboard")}
         </h2>
 
-        {/* Export Dropdown */}
+        {/* Export Dropdown for Tasks */}
         <div
           className="relative export-dropdown"
-          onClick={() => setShowExportMenu((prev) => !prev)}
+          onClick={() => setShowTaskExportMenu((prev) => !prev)}
         >
           <button className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105">
             <Download className="h-4 w-4" />
             {t("dashboard.export")}
             <ChevronDown
               className={`h-4 w-4 transition-transform ${
-                showExportMenu ? "rotate-180" : ""
+                showTaskExportMenu ? "rotate-180" : ""
               }`}
             />
           </button>
 
-          {/* Dropdown Menu */}
-          {showExportMenu && (
+          {showTaskExportMenu && (
             <div className="absolute right-0 mt-2 w-48 rounded-xl bg-card border border-border shadow-xl z-50 overflow-hidden animate-fadeIn">
               <button
-                onClick={exportToExcel}
+                onClick={exportTasksToExcel}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/60 transition-colors"
               >
                 <FileSpreadsheet className="h-4 w-4 text-green-600" />
                 <span>{t("dashboard.exportToExcel")}</span>
               </button>
               <button
-                onClick={exportToJPG}
+                onClick={exportTasksToJPG}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/60 transition-colors border-t border-border/60"
               >
                 <FileImage className="h-4 w-4 text-blue-600" />
                 <span>{t("dashboard.exportToJPG")}</span>
               </button>
               <button
-                onClick={exportToPDF}
+                onClick={exportTasksToPDF}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/60 transition-colors border-t border-border/60"
               >
                 <FileText className="h-4 w-4 text-red-600" />
@@ -480,56 +467,52 @@ export function ObservationsDashboard() {
                   <div className="flex items-center gap-2 flex-1">
                     <div className="flex flex-col flex-1">
                       <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                        {t("dashboard.from")}
+                        From
                       </span>
                       <input
                         type="date"
-                        value={dateRange.startDate}
-                        onChange={handleStartDateChange}
+                        value={taskDateRange.startDate}
+                        onChange={handleTaskStartDateChange}
                         className="text-xs font-medium border-0 p-0 focus:outline-none focus:ring-0 bg-transparent w-full"
                       />
                     </div>
                     <div className="h-4 w-px bg-border" />
                     <div className="flex flex-col flex-1">
                       <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                        {t("dashboard.to")}
+                        To
                       </span>
                       <input
                         type="date"
-                        value={dateRange.endDate}
-                        onChange={handleEndDateChange}
+                        value={taskDateRange.endDate}
+                        onChange={handleTaskEndDateChange}
                         className="text-xs font-medium border-0 p-0 focus:outline-none focus:ring-0 bg-transparent w-full"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Risk Level - Compact */}
+                {/* Task Creator - Compact */}
                 <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-sm min-w-[180px]">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                  <Users className="h-4 w-4 text-blue-500 flex-shrink-0" />
                   <select
-                    value={selectedRiskLevel}
-                    onChange={(e) =>
-                      setSelectedRiskLevel(
-                        e.target.value === "all"
-                          ? "all"
-                          : Number(e.target.value)
-                      )
-                    }
+                    value={selectedTaskCreator}
+                    onChange={(e) => setSelectedTaskCreator(e.target.value)}
                     className="text-xs font-medium border-0 p-0 focus:outline-none focus:ring-0 bg-transparent flex-1"
                   >
-                    <option value="all">{t("dashboard.allLevels")}</option>
-                    <option value="1">{t("dashboard.level1Low")}</option>
-                    <option value="2">{t("dashboard.level2")}</option>
-                    <option value="3">{t("dashboard.level3Medium")}</option>
-                    <option value="4">{t("dashboard.level4")}</option>
-                    <option value="5">{t("dashboard.level5High")}</option>
+                    <option value="all">
+                      {t("dashboard.allCreators") || "All Creators"}
+                    </option>
+                    {taskCreators.map((creator) => (
+                      <option key={creator.id} value={creator.id}>
+                        {creator.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 {/* Reset Button */}
                 <button
-                  onClick={resetFilters}
+                  onClick={resetTaskFilters}
                   className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-primary/80 px-3 py-2 text-xs font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
@@ -538,7 +521,7 @@ export function ObservationsDashboard() {
 
                 {/* Count Badge */}
                 <div className="rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-md">
-                  {filteredObservations.length} / {observations?.length || 0}
+                  {filteredTasks.length} / {tasks?.length || 0}
                 </div>
               </div>
             </CardContent>
@@ -555,19 +538,19 @@ export function ObservationsDashboard() {
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {chartOptions.map((chart) => (
+                  {taskChartOptions.map((chart) => (
                     <button
                       key={chart.id}
-                      onClick={() => toggleChart(chart.id)}
+                      onClick={() => toggleTaskChart(chart.id)}
                       className={`group relative flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all ${
-                        selectedCharts.includes(chart.id)
+                        selectedTaskCharts.includes(chart.id)
                           ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg scale-105"
                           : "bg-card border border-border text-foreground hover:border-primary/40 hover:bg-muted/60"
                       }`}
                     >
                       <span className="text-base">{chart.icon}</span>
                       <span>{chart.label}</span>
-                      {selectedCharts.includes(chart.id) && (
+                      {selectedTaskCharts.includes(chart.id) && (
                         <CheckCircle2 className="h-3.5 w-3.5 ml-1" />
                       )}
                     </button>
@@ -581,29 +564,29 @@ export function ObservationsDashboard() {
         {/* Stats Cards Slider - Right Side (40%) */}
         <Card className="border-border/50 shadow-lg bg-card overflow-hidden">
           <CardContent className="p-4">
-            {statusStats.length === 0 ? (
+            {taskStatusStats.length === 0 ? (
               <div className="flex items-center justify-center h-full min-h-[200px]">
                 <p className="text-sm text-muted-foreground">
-                  {t("dashboard.noObservations")}
+                  {t("dashboard.noTasks") || "No tasks found"}
                 </p>
               </div>
             ) : (
               <div
                 className="relative"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
+                onMouseEnter={() => setIsTaskPaused(true)}
+                onMouseLeave={() => setIsTaskPaused(false)}
               >
                 {/* Navigation Arrows */}
-                {totalSlides > 1 && (
+                {totalTaskSlides > 1 && (
                   <>
                     <button
-                      onClick={prevSlide}
+                      onClick={prevTaskSlide}
                       className="absolute left-0 top-1/2 z-20 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-card/90 backdrop-blur-sm border border-border shadow-lg transition-all hover:scale-110 hover:bg-muted/80"
                     >
                       <ChevronLeft className="h-4 w-4 text-foreground" />
                     </button>
                     <button
-                      onClick={nextSlide}
+                      onClick={nextTaskSlide}
                       className="absolute right-0 top-1/2 z-20 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-card/90 backdrop-blur-sm border border-border shadow-lg transition-all hover:scale-110 hover:bg-muted/80"
                     >
                       <ChevronRight className="h-4 w-4 text-foreground" />
@@ -614,19 +597,19 @@ export function ObservationsDashboard() {
                 {/* Slider Container */}
                 <div
                   className={`overflow-hidden ${
-                    totalSlides > 1 ? "px-10" : ""
+                    totalTaskSlides > 1 ? "px-10" : ""
                   }`}
                 >
                   <div
                     className="flex gap-3 transition-all duration-700 ease-in-out"
                     style={{
-                      transform: `translateX(calc(-${currentSlide * 100}% - ${
-                        currentSlide * 12
-                      }px))`,
+                      transform: `translateX(calc(-${
+                        currentTaskSlide * 100
+                      }% - ${currentTaskSlide * 12}px))`,
                     }}
                   >
-                    {/* Dynamic Status Cards */}
-                    {statusStats.map((stat) => {
+                    {/* Dynamic Task Status Cards */}
+                    {taskStatusStats.map((stat) => {
                       const IconComponent = stat.icon;
                       return (
                         <div key={stat.id} className="w-full flex-shrink-0">
@@ -660,14 +643,14 @@ export function ObservationsDashboard() {
                 </div>
 
                 {/* Dots Navigation */}
-                {totalSlides > 1 && (
+                {totalTaskSlides > 1 && (
                   <div className="flex items-center justify-center gap-2 mt-4">
-                    {Array.from({ length: totalSlides }).map((_, index) => (
+                    {Array.from({ length: totalTaskSlides }).map((_, index) => (
                       <button
                         key={index}
-                        onClick={() => goToSlide(index)}
+                        onClick={() => goToTaskSlide(index)}
                         className={`rounded-full transition-all duration-300 ${
-                          currentSlide === index
+                          currentTaskSlide === index
                             ? "bg-gradient-to-r from-green-500 to-green-600 h-2 w-8 shadow-md"
                             : "bg-border/80 hover:bg-border h-2 w-2"
                         }`}
@@ -682,21 +665,21 @@ export function ObservationsDashboard() {
         </Card>
       </div>
 
-      {/* Dynamic Charts Section - Only show selected charts */}
-      {selectedCharts.length > 0 && (
+      {/* Dynamic Task Charts Section */}
+      {selectedTaskCharts.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Projects Chart */}
-          {selectedCharts.includes("projects") && (
+          {/* Tasks by Project Chart */}
+          {selectedTaskCharts.includes("projects") && (
             <Card className="border-border/50 shadow-lg bg-card animate-fadeIn">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-base">
-                    {t("dashboard.observationsByProject")}
+                    {taskChartOptions.find((c) => c.id === "projects")?.label}
                   </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                {projectData.length === 0 ? (
+                {taskProjectData.length === 0 ? (
                   <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
                     {t("dashboard.noDataAvailable")}
                   </div>
@@ -712,7 +695,7 @@ export function ObservationsDashboard() {
                           }}
                         />
                         <Pie
-                          data={projectData}
+                          data={taskProjectData}
                           dataKey="count"
                           nameKey="name"
                           cx="50%"
@@ -722,7 +705,7 @@ export function ObservationsDashboard() {
                           paddingAngle={2}
                           label={(entry) => entry.name}
                         >
-                          {projectData.map((_, index) => (
+                          {taskProjectData.map((_, index) => (
                             <Cell
                               key={`cell-${index}`}
                               fill={CHART_COLORS[index % CHART_COLORS.length]}
@@ -737,18 +720,21 @@ export function ObservationsDashboard() {
             </Card>
           )}
 
-          {/* Departments Chart */}
-          {selectedCharts.includes("departments") && (
+          {/* Tasks by Department Chart */}
+          {selectedTaskCharts.includes("departments") && (
             <Card className="border-border/50 shadow-lg bg-card animate-fadeIn">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-base">
-                    {t("dashboard.observationsByDepartment")}
+                    {
+                      taskChartOptions.find((c) => c.id === "departments")
+                        ?.label
+                    }
                   </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                {departmentData.length === 0 ? (
+                {taskDepartmentData.length === 0 ? (
                   <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
                     {t("dashboard.noDataAvailable")}
                   </div>
@@ -756,12 +742,12 @@ export function ObservationsDashboard() {
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart
-                        data={departmentData}
+                        data={taskDepartmentData}
                         margin={{ left: 0, right: 0, top: 10, bottom: 20 }}
                       >
                         <defs>
                           <linearGradient
-                            id="obsDept"
+                            id="taskDept"
                             x1="0"
                             y1="0"
                             x2="0"
@@ -799,7 +785,7 @@ export function ObservationsDashboard() {
                           type="monotone"
                           dataKey="count"
                           stroke="#3b82f6"
-                          fill="url(#obsDept)"
+                          fill="url(#taskDept)"
                           strokeWidth={2}
                         />
                       </AreaChart>
@@ -810,19 +796,18 @@ export function ObservationsDashboard() {
             </Card>
           )}
 
-          {/* Categories Chart */}
-          {selectedCharts.includes("categories") && (
+          {/* Tasks by Category Chart */}
+          {selectedTaskCharts.includes("categories") && (
             <Card className="border-border/50 shadow-lg bg-card animate-fadeIn">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-base">
-                    {t("dashboard.observationsByCategory") ||
-                      "Observations by Category"}
+                    {taskChartOptions.find((c) => c.id === "categories")?.label}
                   </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                {categoryData.length === 0 ? (
+                {taskCategoryData.length === 0 ? (
                   <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
                     {t("dashboard.noDataAvailable")}
                   </div>
@@ -830,7 +815,7 @@ export function ObservationsDashboard() {
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart
-                        data={categoryData}
+                        data={taskCategoryData}
                         margin={{ left: 0, right: 0, top: 10, bottom: 60 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
@@ -846,15 +831,15 @@ export function ObservationsDashboard() {
                         <Tooltip />
                         <Bar
                           dataKey="count"
-                          fill="#8b5cf6"
+                          fill="#f59e0b"
                           radius={[8, 8, 0, 0]}
                         />
                         <Line
                           type="monotone"
                           dataKey="count"
-                          stroke="#6d28d9"
+                          stroke="#d97706"
                           strokeWidth={3}
-                          dot={{ r: 4, strokeWidth: 2, fill: "#6d28d9" }}
+                          dot={{ r: 4, strokeWidth: 2, fill: "#d97706" }}
                           activeDot={{ r: 6 }}
                         />
                       </ComposedChart>
@@ -865,74 +850,21 @@ export function ObservationsDashboard() {
             </Card>
           )}
 
-          {/* Locations Chart */}
-          {selectedCharts.includes("locations") && (
+          {/* Top 5 Task Supervisors Chart */}
+          {selectedTaskCharts.includes("supervisors") && (
             <Card className="border-border/50 shadow-lg bg-card animate-fadeIn">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-base">
-                    {t("dashboard.observationsByLocation")}
+                    {
+                      taskChartOptions.find((c) => c.id === "supervisors")
+                        ?.label
+                    }
                   </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                {locationData.length === 0 ? (
-                  <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-                    {t("dashboard.noDataAvailable")}
-                  </div>
-                ) : (
-                  <div className="h-80 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={locationData}
-                        margin={{ left: 0, right: 0, top: 10, bottom: 60 }}
-                        layout="horizontal"
-                      >
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                        <XAxis
-                          dataKey="name"
-                          tick={{ fontSize: 11 }}
-                          angle={-45}
-                          textAnchor="end"
-                          height={100}
-                          interval={0}
-                        />
-                        <YAxis tick={{ fontSize: 12 }} />
-                        <Tooltip
-                          contentStyle={{
-                            borderRadius: 12,
-                            border: "1px solid #e2e8f0",
-                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                          }}
-                        />
-                        <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                          {locationData.map((_, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={CHART_COLORS[index % CHART_COLORS.length]}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Supervisors Chart */}
-          {selectedCharts.includes("supervisors") && (
-            <Card className="border-border/50 shadow-lg bg-card animate-fadeIn">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-base">
-                    {t("dashboard.top5Supervisors")}
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {supervisorData.length === 0 ? (
+                {taskSupervisorData.length === 0 ? (
                   <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
                     {t("dashboard.noDataAvailable")}
                   </div>
@@ -940,7 +872,7 @@ export function ObservationsDashboard() {
                   <div className="h-80 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
-                        data={supervisorData}
+                        data={taskSupervisorData}
                         margin={{ left: 0, right: 0, top: 10, bottom: 60 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
@@ -978,29 +910,29 @@ export function ObservationsDashboard() {
         </div>
       )}
 
-      {/* Hidden Export Layout */}
+      {/* Hidden Export Layout for Tasks */}
       <div
-        ref={exportRef}
+        ref={taskExportRef}
         className="fixed left-[-9999px] top-0 w-[1400px] bg-white p-8 space-y-6"
       >
         {/* Export Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold uppercase tracking-tight">
-            {t("dashboard.observationsDashboard")}
+            {t("dashboard.tasksDashboard") || "TASKS DASHBOARD"}
           </h1>
         </div>
 
-        {/* Stats Cards - Dynamic based on status */}
+        {/* Task Stats Cards - Dynamic based on status */}
         <div
           className={`grid gap-4 mb-6 ${
-            statusStats.length <= 3
+            taskStatusStats.length <= 3
               ? "grid-cols-3"
-              : statusStats.length === 4
+              : taskStatusStats.length === 4
               ? "grid-cols-4"
               : "grid-cols-3"
           }`}
         >
-          {statusStats.map((stat) => {
+          {taskStatusStats.map((stat) => {
             const IconComponent = stat.icon;
             return (
               <div
@@ -1029,25 +961,25 @@ export function ObservationsDashboard() {
           })}
         </div>
 
-        {/* Selected Charts Only */}
-        {selectedCharts.length > 0 && (
+        {/* Selected Task Charts Only */}
+        {selectedTaskCharts.length > 0 && (
           <div className="grid gap-6 grid-cols-2">
-            {/* Projects Chart */}
-            {selectedCharts.includes("projects") && (
+            {/* Tasks by Project Chart */}
+            {selectedTaskCharts.includes("projects") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">рџ“Љ</span>
                     <CardTitle className="text-lg">
-                      {t("dashboard.observationsByProject")}
+                      {taskChartOptions.find((c) => c.id === "projects")?.label}
                     </CardTitle>
                   </div>
                   <CardDescription className="text-sm">
-                    {t("dashboard.distributionAcrossProjects")}
+                    Distribution across projects
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {projectData.length === 0 ? (
+                  {taskProjectData.length === 0 ? (
                     <div className="flex h-64 items-center justify-center">
                       <p className="text-sm text-muted-foreground">
                         {t("dashboard.noDataAvailable")}
@@ -1059,7 +991,7 @@ export function ObservationsDashboard() {
                         <PieChart>
                           <Tooltip />
                           <Pie
-                            data={projectData}
+                            data={taskProjectData}
                             dataKey="count"
                             nameKey="name"
                             cx="50%"
@@ -1069,7 +1001,7 @@ export function ObservationsDashboard() {
                             paddingAngle={2}
                             label={(entry) => entry.name}
                           >
-                            {projectData.map((_, index) => (
+                            {taskProjectData.map((_, index) => (
                               <Cell
                                 key={`cell-${index}`}
                                 fill={CHART_COLORS[index % CHART_COLORS.length]}
@@ -1084,22 +1016,25 @@ export function ObservationsDashboard() {
               </Card>
             )}
 
-            {/* Departments Chart */}
-            {selectedCharts.includes("departments") && (
+            {/* Tasks by Department Chart */}
+            {selectedTaskCharts.includes("departments") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">рџЏў</span>
                     <CardTitle className="text-lg">
-                      {t("dashboard.observationsByDepartment")}
+                      {
+                        taskChartOptions.find((c) => c.id === "departments")
+                          ?.label
+                      }
                     </CardTitle>
                   </div>
                   <CardDescription className="text-sm">
-                    {t("dashboard.distributionAcrossDepartments")}
+                    Distribution across departments
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {departmentData.length === 0 ? (
+                  {taskDepartmentData.length === 0 ? (
                     <div className="flex h-64 items-center justify-center">
                       <p className="text-sm text-muted-foreground">
                         {t("dashboard.noDataAvailable")}
@@ -1109,12 +1044,12 @@ export function ObservationsDashboard() {
                     <div className="h-80 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
-                          data={departmentData}
+                          data={taskDepartmentData}
                           margin={{ left: 0, right: 0, top: 10, bottom: 40 }}
                         >
                           <defs>
                             <linearGradient
-                              id="obsDeptExport"
+                              id="taskDeptExport"
                               x1="0"
                               y1="0"
                               x2="0"
@@ -1146,7 +1081,7 @@ export function ObservationsDashboard() {
                             type="monotone"
                             dataKey="count"
                             stroke="#3b82f6"
-                            fill="url(#obsDeptExport)"
+                            fill="url(#taskDeptExport)"
                             strokeWidth={2}
                           />
                         </AreaChart>
@@ -1157,15 +1092,17 @@ export function ObservationsDashboard() {
               </Card>
             )}
 
-            {/* Categories Chart */}
-            {selectedCharts.includes("categories") && (
+            {/* Tasks by Category Chart */}
+            {selectedTaskCharts.includes("categories") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџЏ·</span>
+                    <span className="text-xl">??</span>
                     <CardTitle className="text-lg">
-                      {t("dashboard.observationsByCategory") ||
-                        "Observations by Category"}
+                      {
+                        taskChartOptions.find((c) => c.id === "categories")
+                          ?.label
+                      }
                     </CardTitle>
                   </div>
                   <CardDescription className="text-sm">
@@ -1174,67 +1111,7 @@ export function ObservationsDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {categoryData.length === 0 ? (
-                    <div className="flex h-64 items-center justify-center">
-                      <p className="text-sm text-muted-foreground">
-                        {t("dashboard.noDataAvailable")}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="h-80 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart
-                          data={categoryData}
-                          margin={{ left: 0, right: 0, top: 10, bottom: 60 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                          <XAxis
-                            dataKey="name"
-                            tick={{ fontSize: 11 }}
-                            angle={-45}
-                            textAnchor="end"
-                            height={100}
-                            interval={0}
-                          />
-                          <YAxis tick={{ fontSize: 12 }} />
-                          <Tooltip />
-                          <Bar
-                            dataKey="count"
-                            fill="#8b5cf6"
-                            radius={[8, 8, 0, 0]}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="count"
-                            stroke="#6d28d9"
-                            strokeWidth={3}
-                            dot={{ r: 4, strokeWidth: 2, fill: "#6d28d9" }}
-                            activeDot={{ r: 6 }}
-                          />
-                        </ComposedChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Locations Chart */}
-            {selectedCharts.includes("locations") && (
-              <Card className="border-border/50 shadow-lg bg-card">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">рџ“Ќ</span>
-                    <CardTitle className="text-lg">
-                      {t("dashboard.observationsByLocation")}
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-sm">
-                    {t("dashboard.numberOfObservationsAtEachLocation")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {locationData.length === 0 ? (
+                  {taskCategoryData.length === 0 ? (
                     <div className="flex h-64 items-center justify-center">
                       <p className="text-sm text-muted-foreground">
                         {t("dashboard.noDataAvailable")}
@@ -1244,28 +1121,24 @@ export function ObservationsDashboard() {
                     <div className="h-80 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
-                          data={locationData}
-                          margin={{ left: 0, right: 0, top: 10, bottom: 60 }}
+                          data={taskCategoryData}
+                          layout="vertical"
+                          margin={{ left: 20, right: 20, top: 10, bottom: 10 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                          <XAxis
+                          <XAxis type="number" tick={{ fontSize: 12 }} />
+                          <YAxis
                             dataKey="name"
-                            tick={{ fontSize: 11 }}
-                            angle={-45}
-                            textAnchor="end"
-                            height={100}
-                            interval={0}
+                            type="category"
+                            tick={{ fontSize: 12 }}
+                            width={140}
                           />
-                          <YAxis tick={{ fontSize: 12 }} />
                           <Tooltip />
-                          <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                            {locationData.map((_, index) => (
-                              <Cell
-                                key={`cell-${index}`}
-                                fill={CHART_COLORS[index % CHART_COLORS.length]}
-                              />
-                            ))}
-                          </Bar>
+                          <Bar
+                            dataKey="count"
+                            radius={[0, 8, 8, 0]}
+                            fill="#f59e0b"
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -1274,22 +1147,25 @@ export function ObservationsDashboard() {
               </Card>
             )}
 
-            {/* Supervisors Chart */}
-            {selectedCharts.includes("supervisors") && (
+            {/* Top 5 Task Supervisors Chart */}
+            {selectedTaskCharts.includes("supervisors") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">рџ‘Ґ</span>
                     <CardTitle className="text-lg">
-                      {t("dashboard.top5Supervisors")}
+                      {
+                        taskChartOptions.find((c) => c.id === "supervisors")
+                          ?.label
+                      }
                     </CardTitle>
                   </div>
                   <CardDescription className="text-sm">
-                    {t("dashboard.supervisorsWithMostObservations")}
+                    Supervisors with most tasks
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {supervisorData.length === 0 ? (
+                  {taskSupervisorData.length === 0 ? (
                     <div className="flex h-64 items-center justify-center">
                       <p className="text-sm text-muted-foreground">
                         {t("dashboard.noDataAvailable")}
@@ -1299,7 +1175,7 @@ export function ObservationsDashboard() {
                     <div className="h-80 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart
-                          data={supervisorData}
+                          data={taskSupervisorData}
                           margin={{ left: 0, right: 0, top: 10, bottom: 60 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" opacity={0.25} />

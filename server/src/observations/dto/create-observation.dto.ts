@@ -52,6 +52,10 @@ export class CreateObservationDto {
   @IsUUID()
   branchId?: string;
 
+  @IsOptional()
+  @IsUUID()
+  companyId?: string;
+
   @IsUUID()
   supervisorId: string;
 

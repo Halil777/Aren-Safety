@@ -63,6 +63,10 @@ export const ROUTES = {
     LIST: "/types",
     DETAIL: (id: string) => `/types/${id}`,
   },
+  BRANCHES: {
+    LIST: "/branches",
+    DETAIL: (id: string) => `/branches/${id}`,
+  },
   LOCATIONS: {
     LIST: "/locations",
     DETAIL: (id: string) => `/locations/${id}`,

@@ -11,7 +11,8 @@ import { useCategoriesQuery } from "@/features/categories/api/hooks";
 import { useSubcategoriesQuery } from "@/features/subcategories/api/hooks";
 import { useSupervisorsQuery } from "@/features/supervisors/api/hooks";
 import { useLocationsQuery } from "@/features/locations/api/hooks";
-import { useTypesQuery } from "@/features/types/api/hooks";
+import { useBranchesQuery } from "@/features/branches/api/hooks";
+import { useCompaniesQuery } from "@/features/companies/api/hooks";
 import {
   useAddObservationMediaMutation,
   useCreateObservationMutation,
@@ -42,7 +43,8 @@ export function ObservationsPage() {
   const categoriesQuery = useCategoriesQuery("observation");
   const subcategoriesQuery = useSubcategoriesQuery("observation");
   const supervisorsQuery = useSupervisorsQuery();
-  const typesQuery = useTypesQuery();
+  const branchesQuery = useBranchesQuery();
+  const companiesQuery = useCompaniesQuery();
   const observationsQuery = useObservationsQuery();
   const createMutation = useCreateObservationMutation();
   const updateMutation = useUpdateObservationMutation();
@@ -61,6 +63,7 @@ export function ObservationsPage() {
     categoryId: "",
     subcategoryId: "",
     branchId: "",
+    companyId: "",
     workerFullName: "",
     workerProfession: "",
     riskLevel: 1,
@@ -85,7 +88,7 @@ export function ObservationsPage() {
       (loc) => loc.projectId === formState.projectId
     ) ?? [];
   const filteredBranches =
-    typesQuery.data?.filter((type) => type.projectId === formState.projectId) ??
+    branchesQuery.data?.filter((branch) => branch.projectId === formState.projectId) ??
     [];
 
   const handleOpenDrawer = (row?: Observation) => {
@@ -101,6 +104,7 @@ export function ObservationsPage() {
         categoryId: row.categoryId,
         subcategoryId: row.subcategoryId,
         branchId: row.branchId ?? "",
+        companyId: row.companyId ?? "",
         workerFullName: row.workerFullName,
         workerProfession: row.workerProfession,
         riskLevel: row.riskLevel,
@@ -122,6 +126,7 @@ export function ObservationsPage() {
         categoryId: "",
         subcategoryId: "",
         branchId: "",
+        companyId: "",
         workerFullName: "",
         workerProfession: "",
         riskLevel: 1,
@@ -176,6 +181,8 @@ export function ObservationsPage() {
       departmentId: formState.departmentId,
       categoryId: formState.categoryId,
       subcategoryId: formState.subcategoryId,
+      branchId: formState.branchId || undefined,
+      companyId: formState.companyId || undefined,
       workerFullName: formState.workerFullName,
       workerProfession: formState.workerProfession,
       riskLevel: formState.riskLevel,
@@ -335,7 +342,7 @@ export function ObservationsPage() {
                       </Td>
                       <Td>
                         {row.branch?.typeName ||
-                          typesQuery.data?.find(
+                          branchesQuery.data?.find(
                             (b) => b.id === row.branchId
                           )?.typeName ||
                           t("common.noData", { defaultValue: "N/A" })}
@@ -578,10 +585,8 @@ export function ObservationsPage() {
                     label={t("observations.form.branch", {
                       defaultValue: "Branch",
                     })}
-                    required
                   >
                     <select
-                      required
                       value={formState.branchId}
                       onChange={(e) =>
                         setFormState((s) => ({
@@ -701,6 +706,34 @@ export function ObservationsPage() {
                     </select>
                   </Field>
                 </TwoCol>
+
+                <Field
+                  label={t("observations.form.company", {
+                    defaultValue: "Company",
+                  })}
+                >
+                  <select
+                    value={formState.companyId}
+                    onChange={(e) =>
+                      setFormState((s) => ({
+                        ...s,
+                        companyId: e.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <option value="">
+                      {t("observations.form.companyPlaceholder", {
+                        defaultValue: "Select company (optional)",
+                      })}
+                    </option>
+                    {companiesQuery.data?.map((company) => (
+                      <option key={company.id} value={company.id}>
+                        {company.companyName}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
 
                 <TwoCol>
                   <Field
@@ -995,7 +1028,7 @@ export function ObservationsPage() {
                 label={t("observations.form.branch", { defaultValue: "Branch" })}
                 value={
                   detailObservation.branch?.typeName ||
-                  typesQuery.data?.find((b) => b.id === detailObservation.branchId)?.typeName ||
+                  branchesQuery.data?.find((b) => b.id === detailObservation.branchId)?.typeName ||
                   t("common.noData", { defaultValue: "N/A" })
                 }
               />
@@ -1124,6 +1157,7 @@ type ObservationForm = {
   categoryId: string;
   subcategoryId: string;
   branchId: string;
+  companyId: string;
   workerFullName: string;
   workerProfession: string;
   riskLevel: number;

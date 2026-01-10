@@ -56,8 +56,9 @@ export type ObservationInput = {
   departmentId: string
   categoryId: string
   subcategoryId: string
+  branchId?: string
   supervisorId: string
-  companyId?: string | null
+  companyId?: string
   workerFullName: string
   workerProfession: string
   riskLevel: number

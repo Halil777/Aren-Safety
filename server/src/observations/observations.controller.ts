@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ObservationsService } from './observations.service';
 import { CreateObservationMediaDto } from './dto/create-observation-media.dto';
@@ -48,5 +58,16 @@ export class ObservationsController {
   @Post(':id/media')
   addMedia(@Req() req: any, @Param('id') id: string, @Body() dto: CreateObservationMediaDto) {
     return this.observationsService.addMedia(this.getTenantId(req), id, dto);
+  }
+
+  @Delete(':id')
+  remove(@Req() req: any, @Param('id') id: string) {
+    const role = this.getRole(req);
+    return this.observationsService.remove(
+      this.getTenantId(req),
+      id,
+      role,
+      role ? req.user?.userId ?? null : null,
+    );
   }
 }

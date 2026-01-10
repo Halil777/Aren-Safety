@@ -440,6 +440,31 @@ export class ObservationsService {
     return company;
   }
 
+  async remove(
+    tenantId: string,
+    id: string,
+    role: MobileRole | null,
+    accountId: string | null,
+  ) {
+    const observation = await this.observationsRepository.findOne({
+      where: { id, tenantId },
+    });
+    if (!observation) {
+      throw new NotFoundException('Observation not found');
+    }
+
+    if (role) {
+      const isCreator = observation.createdByUserId === accountId;
+      const isAssignedSupervisor = observation.supervisorId === accountId;
+      if (role === MobileRole.SUPERVISOR && !(isCreator || isAssignedSupervisor)) {
+        throw new BadRequestException('Not allowed to delete observation');
+      }
+    }
+
+    await this.observationsRepository.remove(observation);
+    return { success: true };
+  }
+
   private mapForMobile(observation: Observation) {
     return {
       id: observation.id,

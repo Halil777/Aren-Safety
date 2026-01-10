@@ -1,12 +1,12 @@
 import { IsOptional, IsString, IsUUID, Length } from 'class-validator';
 
-export class CreateTypeDto {
+export class CreateBranchDto {
   @IsUUID()
   projectId: string;
 
   @IsString()
   @Length(2, 255)
-  typeName: string;
+  name: string;
 
   @IsOptional()
   @IsString()

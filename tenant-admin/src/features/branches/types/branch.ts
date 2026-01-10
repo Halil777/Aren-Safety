@@ -1,6 +1,6 @@
 export type Branch = {
   id: string
-  typeName: string
+  name: string
   projectId: string
   tenantId: string
   createdAt: string
@@ -12,6 +12,6 @@ export type Branch = {
 }
 
 export type BranchInput = {
-  typeName: string
+  name: string
   projectId: string
 }

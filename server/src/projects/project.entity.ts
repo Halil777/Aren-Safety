@@ -12,7 +12,7 @@ import { Tenant } from '../tenants/tenant.entity';
 import { Category } from '../categories/category.entity';
 import { Subcategory } from '../subcategories/subcategory.entity';
 import { Department } from '../departments/department.entity';
-import { TypeEntity } from '../types/type.entity';
+import { Branch } from '../branches/branch.entity';
 import { Task } from '../tasks/task.entity';
 import { Company } from '../companies/company.entity';
 import { MobileAccount } from '../mobile-accounts/mobile-account.entity';
@@ -61,8 +61,8 @@ export class Project {
   departments: Department[];
 
   // eslint-disable-next-line import/no-cycle
-  @OneToMany(() => TypeEntity, type => type.project)
-  types: TypeEntity[];
+  @OneToMany(() => Branch, branch => branch.project)
+  branches: Branch[];
 
   // eslint-disable-next-line import/no-cycle
   @OneToMany(() => Task, task => task.project)

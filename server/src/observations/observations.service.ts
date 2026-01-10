@@ -22,7 +22,7 @@ import { MobileRole } from '../mobile-accounts/mobile-role';
 import { CategoryType } from '../categories/category-type';
 import { Company } from '../companies/company.entity';
 import { AnswerObservationDto } from './dto/answer-observation.dto';
-import { TypeEntity } from '../types/type.entity';
+import { Branch } from '../branches/branch.entity';
 
 @Injectable()
 export class ObservationsService {
@@ -45,8 +45,8 @@ export class ObservationsService {
     private readonly subcategoriesRepository: Repository<Subcategory>,
     @InjectRepository(Company)
     private readonly companiesRepository: Repository<Company>,
-    @InjectRepository(TypeEntity)
-    private readonly typesRepository: Repository<TypeEntity>,
+    @InjectRepository(Branch)
+    private readonly branchesRepository: Repository<Branch>,
   ) {}
 
   async create(tenantId: string, creatorId: string, dto: CreateObservationDto) {
@@ -413,7 +413,7 @@ export class ObservationsService {
   }
 
   private async findBranch(branchId: string, tenantId: string, projectId: string) {
-    const branch = await this.typesRepository.findOne({
+    const branch = await this.branchesRepository.findOne({
       where: { id: branchId, tenantId, projectId },
     });
     if (!branch) {
@@ -464,7 +464,7 @@ export class ObservationsService {
       departmentName: observation.department?.name,
       categoryName: (observation.category as any)?.categoryName,
       subcategoryName: (observation.subcategory as any)?.subcategoryName,
-      branchName: (observation.branch as any)?.typeName,
+      branchName: observation.branch?.name,
       companyName: observation.company ? (observation.company as any).companyName : null,
       supervisorName: observation.supervisor?.fullName,
       createdByName: observation.createdBy?.fullName,

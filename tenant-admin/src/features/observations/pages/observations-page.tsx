@@ -341,10 +341,10 @@ export function ObservationsPage() {
                           t("common.noData", { defaultValue: "N/A" })}
                       </Td>
                       <Td>
-                        {row.branch?.typeName ||
+                        {row.branch?.name ||
                           branchesQuery.data?.find(
                             (b) => b.id === row.branchId
-                          )?.typeName ||
+                          )?.name ||
                           t("common.noData", { defaultValue: "N/A" })}
                       </Td>
                       <Td>
@@ -606,7 +606,7 @@ export function ObservationsPage() {
                       </option>
                       {filteredBranches.map((branch) => (
                         <option key={branch.id} value={branch.id}>
-                          {branch.typeName}
+                          {branch.name}
                         </option>
                       ))}
                     </select>
@@ -1027,8 +1027,8 @@ export function ObservationsPage() {
               <DetailRow
                 label={t("observations.form.branch", { defaultValue: "Branch" })}
                 value={
-                  detailObservation.branch?.typeName ||
-                  branchesQuery.data?.find((b) => b.id === detailObservation.branchId)?.typeName ||
+                  detailObservation.branch?.name ||
+                  branchesQuery.data?.find((b) => b.id === detailObservation.branchId)?.name ||
                   t("common.noData", { defaultValue: "N/A" })
                 }
               />

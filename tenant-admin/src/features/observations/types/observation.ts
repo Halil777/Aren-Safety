@@ -40,7 +40,7 @@ export type Observation = {
   department?: { id: string; name: string }
   category?: { id: string; categoryName: string }
   subcategory?: { id: string; subcategoryName: string }
-  branch?: { id: string; typeName: string }
+  branch?: { id: string; name: string }
   createdBy?: { id: string; fullName: string }
   supervisor?: { id: string; fullName: string }
   company?: { id: string; companyName: string } | null

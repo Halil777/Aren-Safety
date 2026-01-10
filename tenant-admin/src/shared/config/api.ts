@@ -59,10 +59,6 @@ export const ROUTES = {
     LIST: "/observations",
     DETAIL: (id: string) => `/observations/${id}`,
   },
-  TYPES: {
-    LIST: "/types",
-    DETAIL: (id: string) => `/types/${id}`,
-  },
   BRANCHES: {
     LIST: "/branches",
     DETAIL: (id: string) => `/branches/${id}`,

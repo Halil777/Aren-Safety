@@ -9,13 +9,13 @@ import {
 import { Tenant } from '../tenants/tenant.entity';
 import { Project } from '../projects/project.entity';
 
-@Entity('types')
-export class TypeEntity {
+@Entity('branches')
+export class Branch {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar', length: 255 })
-  typeName: string;
+  name: string;
 
   @Column({ type: 'text', nullable: true })
   description?: string | null;
@@ -23,7 +23,7 @@ export class TypeEntity {
   @Column()
   projectId: string;
 
-  @ManyToOne(() => Project, project => project.types, {
+  @ManyToOne(() => Project, project => project.branches, {
     onDelete: 'CASCADE',
   })
   project: Project;
@@ -31,7 +31,7 @@ export class TypeEntity {
   @Column()
   tenantId: string;
 
-  @ManyToOne(() => Tenant, tenant => tenant.types, {
+  @ManyToOne(() => Tenant, tenant => tenant.branches, {
     onDelete: 'CASCADE',
   })
   tenant: Tenant;

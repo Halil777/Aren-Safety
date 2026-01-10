@@ -13,7 +13,7 @@ import { Project } from '../projects/project.entity';
 import { Category } from '../categories/category.entity';
 import { Subcategory } from '../subcategories/subcategory.entity';
 import { Department } from '../departments/department.entity';
-import { TypeEntity } from '../types/type.entity';
+import { Branch } from '../branches/branch.entity';
 import { Task } from '../tasks/task.entity';
 import { Company } from '../companies/company.entity';
 import { MobileAccount } from '../mobile-accounts/mobile-account.entity';
@@ -92,8 +92,8 @@ export class Tenant {
   @OneToMany(() => Department, department => department.tenant)
   departments: Department[];
 
-  @OneToMany(() => TypeEntity, type => type.tenant)
-  types: TypeEntity[];
+  @OneToMany(() => Branch, branch => branch.tenant)
+  branches: Branch[];
 
   @OneToMany(() => Task, task => task.tenant)
   tasks: Task[];

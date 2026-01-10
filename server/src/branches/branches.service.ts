@@ -1,46 +1,46 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TypeEntity } from './type.entity';
+import { Branch } from './branch.entity';
 import { Project } from '../projects/project.entity';
-import { CreateTypeDto } from './dto/create-type.dto';
-import { UpdateTypeDto } from './dto/update-type.dto';
+import { CreateBranchDto } from './dto/create-branch.dto';
+import { UpdateBranchDto } from './dto/update-branch.dto';
 
 @Injectable()
-export class TypesService {
+export class BranchesService {
   constructor(
-    @InjectRepository(TypeEntity)
-    private readonly typesRepository: Repository<TypeEntity>,
+    @InjectRepository(Branch)
+    private readonly branchesRepository: Repository<Branch>,
     @InjectRepository(Project)
     private readonly projectsRepository: Repository<Project>,
   ) {}
 
-  async create(tenantId: string, dto: CreateTypeDto) {
+  async create(tenantId: string, dto: CreateBranchDto) {
     await this.ensureProjectBelongsToTenant(dto.projectId, tenantId);
 
-    const type = this.typesRepository.create({
+    const branch = this.branchesRepository.create({
       ...dto,
       tenantId,
     });
 
-    return this.typesRepository.save(type);
+    return this.branchesRepository.save(branch);
   }
 
   findAllForTenant(tenantId: string) {
-    return this.typesRepository.find({
+    return this.branchesRepository.find({
       where: { tenantId },
       relations: ['project'],
       order: { createdAt: 'DESC' },
     });
   }
 
-  async update(tenantId: string, id: string, dto: UpdateTypeDto) {
-    const existing = await this.typesRepository.findOne({
+  async update(tenantId: string, id: string, dto: UpdateBranchDto) {
+    const existing = await this.branchesRepository.findOne({
       where: { id, tenantId },
     });
 
     if (!existing) {
-      throw new NotFoundException('Type not found');
+      throw new NotFoundException('Branch not found');
     }
 
     if (dto.projectId) {
@@ -48,27 +48,27 @@ export class TypesService {
       existing.projectId = dto.projectId;
     }
 
-    if (dto.typeName !== undefined) {
-      existing.typeName = dto.typeName;
+    if (dto.name !== undefined) {
+      existing.name = dto.name;
     }
 
     if (dto.description !== undefined) {
       existing.description = dto.description;
     }
 
-    return this.typesRepository.save(existing);
+    return this.branchesRepository.save(existing);
   }
 
   async remove(tenantId: string, id: string) {
-    const existing = await this.typesRepository.findOne({
+    const existing = await this.branchesRepository.findOne({
       where: { id, tenantId },
     });
 
     if (!existing) {
-      throw new NotFoundException('Type not found');
+      throw new NotFoundException('Branch not found');
     }
 
-    await this.typesRepository.remove(existing);
+    await this.branchesRepository.remove(existing);
     return { success: true };
   }
 

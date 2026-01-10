@@ -12,7 +12,7 @@ import { Department } from '../departments/department.entity';
 import { Category } from '../categories/category.entity';
 import { Subcategory } from '../subcategories/subcategory.entity';
 import { Company } from '../companies/company.entity';
-import { TypeEntity } from '../types/type.entity';
+import { Branch } from '../branches/branch.entity';
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { TypeEntity } from '../types/type.entity';
       Category,
       Subcategory,
       Company,
-      TypeEntity,
+      Branch,
     ]),
   ],
   controllers: [ObservationsController, MobileObservationsController],

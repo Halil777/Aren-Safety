@@ -14,8 +14,8 @@ import { Subcategory } from "./subcategories/subcategory.entity";
 import { SubcategoriesModule } from "./subcategories/subcategories.module";
 import { Department } from "./departments/department.entity";
 import { DepartmentsModule } from "./departments/departments.module";
-import { TypeEntity } from "./types/type.entity";
-import { TypesModule } from "./types/types.module";
+import { Branch } from "./branches/branch.entity";
+import { BranchesModule } from "./branches/branches.module";
 import { Task } from "./tasks/task.entity";
 import { TasksModule } from "./tasks/tasks.module";
 import { TaskAttachment } from "./tasks/taskAttachment.entity";
@@ -76,7 +76,7 @@ import { LocationsModule } from "./locations/locations.module";
             Category,
             Subcategory,
             Department,
-            TypeEntity,
+            Branch,
             Task,
             TaskAttachment,
             Company,
@@ -110,7 +110,7 @@ import { LocationsModule } from "./locations/locations.module";
     CategoriesModule,
     SubcategoriesModule,
     DepartmentsModule,
-    TypesModule,
+    BranchesModule,
     TasksModule,
     CompaniesModule,
     MobileAccountsModule,

@@ -7,7 +7,6 @@ import { TasksPage } from "@/features/tasks/pages/tasks-page";
 import { DepartmentsPage } from "@/features/departments/pages/departments-page";
 import { CompaniesPage } from "@/features/companies/pages/companies-page";
 import { SubcategoriesPage } from "@/features/subcategories/pages/subcategories-page";
-import { TypesPage } from "@/features/types/pages/types-page";
 import { LocationsPage } from "@/features/locations/pages/locations-page";
 import { SupervisorsPage } from "@/features/supervisors/pages/supervisors-page";
 import { LoginPage } from "@/features/auth/pages/login-page";
@@ -72,10 +71,7 @@ export const appRouter = createBrowserRouter([
         path: "subcategories",
         element: <SubcategoriesPage />,
       },
-      {
-        path: "types",
-        element: <TypesPage />,
-      },
+
       {
         path: "subscription",
         element: <SubscriptionPage />,

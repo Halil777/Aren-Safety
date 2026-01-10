@@ -239,7 +239,7 @@ export function ObservationsDashboard() {
     const branchMap = new Map<string, number>();
 
     filteredObservations.forEach((obs) => {
-      const branchName = obs.branch?.typeName || "Unknown";
+      const branchName = obs.branch?.name || "Unknown";
       branchMap.set(branchName, (branchMap.get(branchName) || 0) + 1);
     });
 

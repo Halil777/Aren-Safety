@@ -1204,14 +1204,9 @@ export function ObservationsDashboard() {
             {selectedCharts.includes("departments") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">
-                      {t("dashboard.observationsByDepartment")}
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-sm">
-                    {t("dashboard.distributionAcrossDepartments")}
-                  </CardDescription>
+                  <CardTitle className="text-lg">
+                    {t("dashboard.observationsByDepartment")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {departmentData.length === 0 ? (
@@ -1276,16 +1271,10 @@ export function ObservationsDashboard() {
             {selectedCharts.includes("categories") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">
-                      {t("dashboard.observationsByCategory") ||
-                        "Observations by Category"}
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-sm">
-                    {t("dashboard.distributionAcrossCategories") ||
-                      "Distribution across categories"}
-                  </CardDescription>
+                  <CardTitle className="text-lg">
+                    {t("dashboard.observationsByCategory") ||
+                      "Observations by Category"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {categoryData.length === 0 ? (
@@ -1337,14 +1326,9 @@ export function ObservationsDashboard() {
             {selectedCharts.includes("locations") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">
-                      {t("dashboard.observationsByLocation")}
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-sm">
-                    {t("dashboard.numberOfObservationsAtEachLocation")}
-                  </CardDescription>
+                  <CardTitle className="text-lg">
+                    {t("dashboard.observationsByLocation")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {locationData.length === 0 ? (
@@ -1391,14 +1375,9 @@ export function ObservationsDashboard() {
             {selectedCharts.includes("supervisors") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">
-                      {t("dashboard.top5Supervisors")}
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-sm">
-                    {t("dashboard.supervisorsWithMostObservations")}
-                  </CardDescription>
+                  <CardTitle className="text-lg">
+                    {t("dashboard.top5Supervisors")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {supervisorData.length === 0 ? (
@@ -1445,16 +1424,10 @@ export function ObservationsDashboard() {
             {selectedCharts.includes("branches") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">
-                      {t("dashboard.observationsByBranch") ||
-                        "Observations by Branch"}
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-sm">
-                    {t("dashboard.distributionAcrossBranches") ||
-                      "Distribution across branches"}
-                  </CardDescription>
+                  <CardTitle className="text-lg">
+                    {t("dashboard.observationsByBranch") ||
+                      "Observations by Branch"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {branchData.length === 0 ? (

@@ -2,16 +2,45 @@ import { ROUTES } from '@/shared/config/api'
 import { apiClient } from '@/shared/lib/api-client'
 import type { Observation, ObservationInput } from '../types/observation'
 
+// Temporary mapping: Frontend uses "OPEN", Backend uses "NEW"
+function mapStatusToBackend(status: string | undefined): string | undefined {
+  if (status === 'OPEN') return 'NEW'
+  return status
+}
+
+function mapStatusFromBackend(status: string): string {
+  if (status === 'NEW') return 'OPEN'
+  return status
+}
+
+function mapObservationFromBackend(obs: Observation): Observation {
+  return {
+    ...obs,
+    status: mapStatusFromBackend(obs.status) as Observation['status']
+  }
+}
+
 export async function fetchObservations(): Promise<Observation[]> {
-  return apiClient.get<Observation[]>(ROUTES.OBSERVATIONS.LIST)
+  const observations = await apiClient.get<Observation[]>(ROUTES.OBSERVATIONS.LIST)
+  return observations.map(mapObservationFromBackend)
 }
 
 export async function createObservation(data: ObservationInput) {
-  return apiClient.post<Observation>(ROUTES.OBSERVATIONS.LIST, data)
+  const backendData = {
+    ...data,
+    status: mapStatusToBackend(data.status) as ObservationInput['status']
+  }
+  const observation = await apiClient.post<Observation>(ROUTES.OBSERVATIONS.LIST, backendData)
+  return mapObservationFromBackend(observation)
 }
 
 export async function updateObservation(id: string, data: Partial<ObservationInput>) {
-  return apiClient.patch<Observation>(ROUTES.OBSERVATIONS.DETAIL(id), data)
+  const backendData = {
+    ...data,
+    status: data.status ? mapStatusToBackend(data.status) as ObservationInput['status'] : undefined
+  }
+  const observation = await apiClient.patch<Observation>(ROUTES.OBSERVATIONS.DETAIL(id), backendData)
+  return mapObservationFromBackend(observation)
 }
 
 export async function deleteObservation(id: string) {

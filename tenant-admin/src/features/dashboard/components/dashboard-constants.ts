@@ -24,10 +24,10 @@ export type StatusCardConfig = {
 export function buildStatusCardConfig(t: TFunction): StatusCardConfig[] {
   return [
     {
-      id: "NEW",
-      status: "NEW",
-      label: t("dashboard.newObservations") || "New Observations",
-      shortLabel: t("dashboard.new") || "New",
+      id: "OPEN",
+      status: "OPEN",
+      label: t("dashboard.openObservations") || "Open Observations",
+      shortLabel: t("dashboard.open") || "Open",
       icon: Clock,
       gradient: "from-[#32586E] to-[#264454]",
     },

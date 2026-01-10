@@ -26,7 +26,7 @@ import type {
 } from "../types/observation";
 
 const statusOptions: ObservationStatus[] = [
-  "NEW",
+  "OPEN",
   "SEEN_BY_SUPERVISOR",
   "IN_PROGRESS",
   "FIXED_PENDING_CHECK",
@@ -65,10 +65,9 @@ export function ObservationsPage() {
     workerProfession: "",
     riskLevel: 1,
     description: "",
-    status: "NEW",
+    status: "OPEN",
     deadlineDate: "",
-    evidenceFiles: [],
-    correctiveFiles: [],
+    files: [],
   });
 
   const rows = observationsQuery.data ?? [];
@@ -110,8 +109,7 @@ export function ObservationsPage() {
         deadlineDate: !Number.isNaN(deadline.getTime())
           ? deadline.toISOString().slice(0, 10)
           : "",
-        evidenceFiles: [],
-        correctiveFiles: [],
+        files: [],
       });
     } else {
       setEditingId(null);
@@ -128,10 +126,9 @@ export function ObservationsPage() {
         workerProfession: "",
         riskLevel: 1,
         description: "",
-        status: "NEW",
+        status: "OPEN",
         deadlineDate: "",
-        evidenceFiles: [],
-        correctiveFiles: [],
+        files: [],
       });
     }
     setDrawerOpen(true);
@@ -196,29 +193,17 @@ export function ObservationsPage() {
       observationId = created.id;
     }
 
-    if (observationId) {
-      const uploads = [
-        ...formState.evidenceFiles.map((file) => ({
-          isCorrective: false,
-          file,
-          uploader: formState.createdByUserId,
-        })),
-        ...formState.correctiveFiles.map((file) => ({
-          isCorrective: true,
-          file,
-          uploader: formState.supervisorId,
-        })),
-      ];
-      for (const item of uploads) {
-        const base64 = await fileToBase64(item.file);
-        const type = item.file.type.startsWith("video") ? "VIDEO" : "IMAGE";
+    if (observationId && formState.files.length > 0) {
+      for (const file of formState.files) {
+        const base64 = await fileToBase64(file);
+        const type = file.type.startsWith("video") ? "VIDEO" : "IMAGE";
         await addMediaMutation.mutateAsync({
           observationId,
           data: {
             type,
             url: base64,
-            uploadedByUserId: item.uploader,
-            isCorrective: item.isCorrective,
+            uploadedByUserId: formState.createdByUserId,
+            isCorrective: false,
           },
         });
       }
@@ -814,45 +799,89 @@ export function ObservationsPage() {
                 </Field>
 
                 <Field
-                  label={t("observations.form.evidence", {
-                    defaultValue: "Evidence (images/videos)",
+                  label={t("observations.form.files", {
+                    defaultValue: "Attachments (Images/Videos)",
                   })}
                 >
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*,video/*"
-                    onChange={(e) =>
-                      setFormState((s) => ({
-                        ...s,
-                        evidenceFiles: e.target.files
-                          ? Array.from(e.target.files)
-                          : [],
-                      }))
-                    }
-                    className="mt-1 block w-full text-sm"
-                  />
-                </Field>
-
-                <Field
-                  label={t("observations.form.corrective", {
-                    defaultValue: "Corrective action media (images/videos)",
-                  })}
-                >
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*,video/*"
-                    onChange={(e) =>
-                      setFormState((s) => ({
-                        ...s,
-                        correctiveFiles: e.target.files
-                          ? Array.from(e.target.files)
-                          : [],
-                      }))
-                    }
-                    className="mt-1 block w-full text-sm"
-                  />
+                  <div className="mt-1">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-xl cursor-pointer bg-muted/30 hover:bg-muted/50 transition-all group">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          className="w-8 h-8 mb-3 text-muted-foreground group-hover:text-primary transition-colors"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          />
+                        </svg>
+                        <p className="mb-1 text-sm text-muted-foreground">
+                          <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Images and videos supported
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        onChange={(e) =>
+                          setFormState((s) => ({
+                            ...s,
+                            files: e.target.files
+                              ? Array.from(e.target.files)
+                              : [],
+                          }))
+                        }
+                        className="hidden"
+                      />
+                    </label>
+                    {formState.files.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {formState.files.map((file, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between p-2 bg-muted/50 rounded-lg border border-border"
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              {file.type.startsWith("image") ? (
+                                <svg className="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-5 h-5 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                              )}
+                              <span className="text-sm truncate">{file.name}</span>
+                              <span className="text-xs text-muted-foreground flex-shrink-0">
+                                ({(file.size / 1024).toFixed(1)} KB)
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFormState((s) => ({
+                                  ...s,
+                                  files: s.files.filter((_, i) => i !== idx),
+                                }))
+                              }
+                              className="ml-2 text-destructive hover:text-destructive/80 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </Field>
 
                 <Field
@@ -1061,8 +1090,7 @@ type ObservationForm = {
   description: string;
   deadlineDate: string;
   status: ObservationStatus;
-  evidenceFiles: File[];
-  correctiveFiles: File[];
+  files: File[];
 };
 
 const TwoCol = ({ children }: { children: React.ReactNode }) => (

@@ -1,5 +1,5 @@
 export type ObservationStatus =
-  | 'NEW'
+  | 'OPEN'
   | 'SEEN_BY_SUPERVISOR'
   | 'IN_PROGRESS'
   | 'FIXED_PENDING_CHECK'

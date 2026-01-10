@@ -16,6 +16,7 @@ import {
   FileImage,
   FileText,
   ChevronDown,
+  GitBranch,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -26,6 +27,7 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { useObservationsQuery } from "@/features/observations/api/hooks";
+import { useSupervisorsQuery } from "@/features/supervisors/api/hooks";
 import { CHART_COLORS, buildStatusCardConfig } from "./dashboard-constants";
 import {
   ResponsiveContainer,
@@ -53,6 +55,7 @@ type DateRange = {
 export function ObservationsDashboard() {
   const { t } = useTranslation();
   const { data: observations, isLoading } = useObservationsQuery();
+  const { data: supervisors } = useSupervisorsQuery();
   const [dateRange, setDateRange] = useState<DateRange>({
     startDate: "",
     endDate: "",
@@ -60,6 +63,9 @@ export function ObservationsDashboard() {
   const [selectedRiskLevel, setSelectedRiskLevel] = useState<number | "all">(
     "all"
   );
+  const [selectedSupervisorId, setSelectedSupervisorId] = useState<
+    string | "all"
+  >("all");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [selectedCharts, setSelectedCharts] = useState<string[]>([]);
@@ -93,6 +99,11 @@ export function ObservationsDashboard() {
       id: "supervisors",
       label: t("dashboard.top5Supervisors"),
       icon: <Users className="h-4 w-4" />,
+    },
+    {
+      id: "branches",
+      label: t("Branch") || "Observations by Branch",
+      icon: <GitBranch className="h-4 w-4" />,
     },
   ];
 
@@ -128,8 +139,14 @@ export function ObservationsDashboard() {
       filtered = filtered.filter((obs) => obs.riskLevel === selectedRiskLevel);
     }
 
+    if (selectedSupervisorId !== "all") {
+      filtered = filtered.filter(
+        (obs) => obs.supervisorId === selectedSupervisorId
+      );
+    }
+
     return filtered;
-  }, [observations, dateRange, selectedRiskLevel]);
+  }, [observations, dateRange, selectedRiskLevel, selectedSupervisorId]);
 
   // Status card configuration
   const statusCardConfig = useMemo(() => buildStatusCardConfig(t), [t]);
@@ -223,6 +240,20 @@ export function ObservationsDashboard() {
       .slice(0, 5);
   }, [filteredObservations]);
 
+  // Branch data for chart
+  const branchData = useMemo(() => {
+    const branchMap = new Map<string, number>();
+
+    filteredObservations.forEach((obs) => {
+      const branchName = obs.branch?.typeName || "Unknown";
+      branchMap.set(branchName, (branchMap.get(branchName) || 0) + 1);
+    });
+
+    return Array.from(branchMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [filteredObservations]);
+
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDateRange((prev) => ({ ...prev, startDate: e.target.value }));
   };
@@ -234,6 +265,7 @@ export function ObservationsDashboard() {
   const resetFilters = () => {
     setDateRange({ startDate: "", endDate: "" });
     setSelectedRiskLevel("all");
+    setSelectedSupervisorId("all");
   };
 
   const goToSlide = useCallback((index: number) => {
@@ -330,6 +362,15 @@ export function ObservationsDashboard() {
         ];
         const supWs = XLSX.utils.aoa_to_sheet(supData);
         XLSX.utils.book_append_sheet(wb, supWs, "Supervisors");
+      }
+
+      if (selectedCharts.includes("branches") && branchData.length > 0) {
+        const branchesData = [
+          ["Branch", "Count"],
+          ...branchData.map((b) => [b.name, b.count]),
+        ];
+        const branchesWs = XLSX.utils.aoa_to_sheet(branchesData);
+        XLSX.utils.book_append_sheet(wb, branchesWs, "Branches");
       }
 
       // Download
@@ -475,31 +516,36 @@ export function ObservationsDashboard() {
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center gap-3 flex-wrap">
                 {/* Date Range - Compact */}
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-sm flex-1 min-w-[200px]">
-                  <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+                <div className="flex items-center gap-1 rounded-xl border border-border bg-card px-0 py-0.5 shadow-sm flex-1 min-w-[50px]">
                   <div className="flex items-center gap-2 flex-1">
-                    <div className="flex flex-col flex-1">
+                    <div className="flex flex-col flex-1 items-center">
                       <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                         {t("dashboard.from")}
                       </span>
-                      <input
-                        type="date"
-                        value={dateRange.startDate}
-                        onChange={handleStartDateChange}
-                        className="text-xs font-medium border-0 p-0 focus:outline-none focus:ring-0 bg-transparent w-full"
-                      />
+                      <div className="relative">
+                        <Calendar className="h-4 w-4 text-primary flex-shrink-0 pointer-events-none" />
+                        <input
+                          type="date"
+                          value={dateRange.startDate}
+                          onChange={handleStartDateChange}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-4 h-4"
+                        />
+                      </div>
                     </div>
                     <div className="h-4 w-px bg-border" />
-                    <div className="flex flex-col flex-1">
+                    <div className="flex flex-col flex-1 items-center">
                       <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                         {t("dashboard.to")}
                       </span>
-                      <input
-                        type="date"
-                        value={dateRange.endDate}
-                        onChange={handleEndDateChange}
-                        className="text-xs font-medium border-0 p-0 focus:outline-none focus:ring-0 bg-transparent w-full"
-                      />
+                      <div className="relative">
+                        <Calendar className="h-4 w-4 text-primary flex-shrink-0 pointer-events-none" />
+                        <input
+                          type="date"
+                          value={dateRange.endDate}
+                          onChange={handleEndDateChange}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-4 h-4"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -524,6 +570,25 @@ export function ObservationsDashboard() {
                     <option value="3">{t("dashboard.level3Medium")}</option>
                     <option value="4">{t("dashboard.level4")}</option>
                     <option value="5">{t("dashboard.level5High")}</option>
+                  </select>
+                </div>
+
+                {/* Supervisor Filter - Compact */}
+                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-sm min-w-[100px]">
+                  <Users className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                  <select
+                    value={selectedSupervisorId}
+                    onChange={(e) => setSelectedSupervisorId(e.target.value)}
+                    className="text-xs font-medium border-0 p-0 focus:outline-none focus:ring-0 bg-transparent flex-1"
+                  >
+                    <option value="all">
+                      {t("Responsible") || "All Supervisors"}
+                    </option>
+                    {supervisors?.map((supervisor) => (
+                      <option key={supervisor.id} value={supervisor.id}>
+                        {supervisor.fullName}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -975,6 +1040,63 @@ export function ObservationsDashboard() {
               </CardContent>
             </Card>
           )}
+
+          {/* Branches Chart */}
+          {selectedCharts.includes("branches") && (
+            <Card className="border-border/50 shadow-lg bg-card animate-fadeIn">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-base">
+                    {t("dashboard.observationsByBranch") ||
+                      "Observations by Branch"}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {branchData.length === 0 ? (
+                  <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+                    {t("dashboard.noDataAvailable")}
+                  </div>
+                ) : (
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={branchData}
+                        margin={{ left: 0, right: 0, top: 10, bottom: 60 }}
+                        layout="horizontal"
+                      >
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                        <XAxis
+                          dataKey="name"
+                          tick={{ fontSize: 11 }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={100}
+                          interval={0}
+                        />
+                        <YAxis tick={{ fontSize: 12 }} />
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: 12,
+                            border: "1px solid #e2e8f0",
+                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                          }}
+                        />
+                        <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                          {branchData.map((_, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={CHART_COLORS[index % CHART_COLORS.length]}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
@@ -1279,7 +1401,7 @@ export function ObservationsDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџ‘Ґ</span>
+                    <span className="text-xl">рџ'Ґ</span>
                     <CardTitle className="text-lg">
                       {t("dashboard.top5Supervisors")}
                     </CardTitle>
@@ -1322,6 +1444,63 @@ export function ObservationsDashboard() {
                             activeDot={{ r: 7 }}
                           />
                         </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Branches Chart */}
+            {selectedCharts.includes("branches") && (
+              <Card className="border-border/50 shadow-lg bg-card">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🔱</span>
+                    <CardTitle className="text-lg">
+                      {t("dashboard.observationsByBranch") ||
+                        "Observations by Branch"}
+                    </CardTitle>
+                  </div>
+                  <CardDescription className="text-sm">
+                    {t("dashboard.distributionAcrossBranches") ||
+                      "Distribution across branches"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {branchData.length === 0 ? (
+                    <div className="flex h-64 items-center justify-center">
+                      <p className="text-sm text-muted-foreground">
+                        {t("dashboard.noDataAvailable")}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="h-80 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={branchData}
+                          margin={{ left: 0, right: 0, top: 10, bottom: 60 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                          <XAxis
+                            dataKey="name"
+                            tick={{ fontSize: 11 }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={100}
+                            interval={0}
+                          />
+                          <YAxis tick={{ fontSize: 12 }} />
+                          <Tooltip />
+                          <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                            {branchData.map((_, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={CHART_COLORS[index % CHART_COLORS.length]}
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
                       </ResponsiveContainer>
                     </div>
                   )}

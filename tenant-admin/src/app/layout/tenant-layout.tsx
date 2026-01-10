@@ -257,7 +257,7 @@ function Sidebar({
                       {/* Flyout children (desktop only) */}
                       <div
                         className={cn(
-                          "absolute left-full top-0 ml-2 hidden md:block",
+                          "absolute left-full top-0 ml-2 hidden md:block mt-[30px]",
                           "min-w-56 rounded-xl border border-border bg-card/95 backdrop-blur shadow-lg",
                           "transition-all duration-150",
                           isGroupOpen

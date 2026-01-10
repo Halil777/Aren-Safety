@@ -246,6 +246,9 @@ export function ObservationsPage() {
                     {t("observations.table.location", { defaultValue: "Area" })}
                   </Th>
                   <Th>
+                    {t("observations.table.branch", { defaultValue: "Branch" })}
+                  </Th>
+                  <Th>
                     {t("observations.table.worker", { defaultValue: "Worker" })}
                   </Th>
                   <Th>
@@ -282,7 +285,7 @@ export function ObservationsPage() {
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11}
                       className="px-4 py-6 text-center text-sm text-muted-foreground"
                     >
                       {t("common.loading", { defaultValue: "Loading..." })}
@@ -291,7 +294,7 @@ export function ObservationsPage() {
                 ) : error ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11}
                       className="px-4 py-6 text-center text-sm text-destructive"
                     >
                       {error.message}
@@ -300,7 +303,7 @@ export function ObservationsPage() {
                 ) : rows.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11}
                       className="px-4 py-6 text-center text-sm text-muted-foreground"
                     >
                       {t("observations.table.empty", {
@@ -328,6 +331,13 @@ export function ObservationsPage() {
                           locationsQuery.data?.find(
                             (loc) => loc.id === row.locationId
                           )?.name ||
+                          t("common.noData", { defaultValue: "N/A" })}
+                      </Td>
+                      <Td>
+                        {row.branch?.typeName ||
+                          typesQuery.data?.find(
+                            (b) => b.id === row.branchId
+                          )?.typeName ||
                           t("common.noData", { defaultValue: "N/A" })}
                       </Td>
                       <Td>
@@ -416,7 +426,7 @@ export function ObservationsPage() {
 
       {drawerOpen ? (
         <div className="fixed inset-0 z-40 flex justify-end bg-black/40 backdrop-blur-sm">
-          <div className="h-screen w-full bg-background shadow-2xl md:w-[40%]">
+          <div className="h-screen w-full bg-background shadow-2xl md:w-[50%]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div>
                 <h2 className="text-lg font-semibold uppercase">
@@ -941,7 +951,7 @@ export function ObservationsPage() {
       {detailObservation ? (
         <div className="fixed inset-0 z-40 flex justify-end">
           <div className="flex-1 bg-black/40" onClick={handleCloseDetails} />
-          <div className="h-full w-full max-w-md overflow-y-auto bg-background p-6 shadow-xl">
+          <div className="h-full w-full md:w-[50%] overflow-y-auto bg-background p-6 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold uppercase">
@@ -1066,6 +1076,37 @@ export function ObservationsPage() {
                     t("common.noData", { defaultValue: "N/A" })}
                 </p>
               </div>
+
+              {detailObservation.media && detailObservation.media.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+                    {t("observations.drawer.media", { defaultValue: "Media" })}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {detailObservation.media.map((item) => (
+                      <div key={item.id} className="relative group">
+                        {item.type === 'IMAGE' ? (
+                          <img
+                            src={item.url}
+                            alt="Observation media"
+                            className="w-full h-48 object-cover rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => window.open(item.url, '_blank')}
+                          />
+                        ) : (
+                          <video
+                            src={item.url}
+                            controls
+                            className="w-full h-48 object-cover rounded-lg border border-border shadow-sm"
+                          />
+                        )}
+                        <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                          {item.isCorrective ? t("observations.drawer.corrective", { defaultValue: "Corrective" }) : t("observations.drawer.evidence", { defaultValue: "Evidence" })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

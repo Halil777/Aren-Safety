@@ -260,6 +260,7 @@ export function ObservationsDashboard() {
     setDateRange({ startDate: "", endDate: "" });
     setSelectedRiskLevel("all");
     setSelectedSupervisorId("all");
+    setSelectedCharts([]);
   };
 
   const goToSlide = useCallback((index: number) => {

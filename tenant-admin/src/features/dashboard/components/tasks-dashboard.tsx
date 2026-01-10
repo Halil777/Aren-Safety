@@ -219,6 +219,7 @@ export function TasksDashboard() {
   const resetTaskFilters = () => {
     setTaskDateRange({ startDate: "", endDate: "" });
     setSelectedTaskCreator("all");
+    setSelectedTaskCharts([]);
   };
 
   const goToTaskSlide = useCallback((index: number) => {

@@ -6,6 +6,15 @@ export type ObservationStatus =
   | 'REJECTED'
   | 'CLOSED'
 
+export type ObservationMedia = {
+  id: string
+  type: 'IMAGE' | 'VIDEO'
+  url: string
+  isCorrective: boolean
+  uploadedByUserId: string
+  createdAt: string
+}
+
 export type Observation = {
   id: string
   tenantId: string
@@ -36,6 +45,7 @@ export type Observation = {
   supervisor?: { id: string; fullName: string }
   company?: { id: string; companyName: string } | null
   location?: { id: string; name: string; projectId: string }
+  media?: ObservationMedia[]
   createdAt?: string
 }
 

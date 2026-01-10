@@ -30,7 +30,7 @@ const resources = {
         locations: "Areas",
         categories: "Categories",
         subcategories: "Subcategories",
-        types: "Branch",
+        branches: "Branches",
         subscription: "Subscription",
       },
       common: {
@@ -124,9 +124,9 @@ const resources = {
           title: "Subcategories",
           description: "Manage nested category structures.",
         },
-        types: {
-          title: "Types",
-          description: "Define observation or task types.",
+        branches: {
+          title: "Branches",
+          description: "Manage branches within projects.",
         },
         subscription: {
           title: "Subscription",
@@ -461,23 +461,23 @@ const resources = {
         },
       },
 
-      types: {
-        actions: { add: "Add Type" },
+      branches: {
+        actions: { add: "Add Branch" },
         table: {
           project: "Project",
-          name: "Type name",
+          name: "Branch name",
           description: "Description",
           noDescription: "No description",
           actions: "Actions",
-          empty: "No types yet.",
+          empty: "No branches yet.",
         },
         form: {
-          editTitle: "Edit Type",
-          createTitle: "Add Type",
-          subtitle: "Type details",
+          editTitle: "Edit Branch",
+          createTitle: "Add Branch",
+          subtitle: "Branch details",
           project: "Project",
           projectPlaceholder: "Select project",
-          name: "Type name",
+          name: "Branch name",
           description: "Description",
         },
       },
@@ -535,7 +535,7 @@ const resources = {
         locations: "Alanlar",
         categories: "Kategoriler",
         subcategories: "Alt Kategoriler",
-        types: "Tipler",
+        branches: "Şubeler",
         subscription: "Abonelik",
       },
       common: {
@@ -622,9 +622,9 @@ const resources = {
           title: "Alt Kategoriler",
           description: "Alt kategori yapılarını yönetin.",
         },
-        types: {
-          title: "Tipler",
-          description: "Gözlem veya görev tiplerini tanımlayın.",
+        branches: {
+          title: "Şubeler",
+          description: "Projelerdeki şubeleri yönetin.",
         },
         subscription: {
           title: "Abonelik",
@@ -953,23 +953,23 @@ const resources = {
         },
       },
 
-      types: {
-        actions: { add: "Tip Ekle" },
+      branches: {
+        actions: { add: "Şube Ekle" },
         table: {
           project: "Proje",
-          name: "Tip adı",
+          name: "Şube adı",
           description: "Açıklama",
           noDescription: "Açıklama yok",
           actions: "İşlemler",
-          empty: "Henüz tip yok.",
+          empty: "Henüz şube yok.",
         },
         form: {
-          editTitle: "Tipi Düzenle",
-          createTitle: "Tip Ekle",
-          subtitle: "Tip detayları",
+          editTitle: "Şubeyi Düzenle",
+          createTitle: "Şube Ekle",
+          subtitle: "Şube detayları",
           project: "Proje",
           projectPlaceholder: "Proje seçin",
-          name: "Tip adı",
+          name: "Şube adı",
           description: "Açıklama",
         },
       },
@@ -1027,7 +1027,7 @@ const resources = {
         locations: "Зоны",
         categories: "Категории",
         subcategories: "Подкатегории",
-        types: "Типы",
+        branches: "Филиалы",
         subscription: "Подписка",
       },
       common: {
@@ -1114,9 +1114,9 @@ const resources = {
           title: "Подкатегории",
           description: "Управление вложенными категориями.",
         },
-        types: {
-          title: "Типы",
-          description: "Определение типов наблюдений или задач.",
+        branches: {
+          title: "Филиалы",
+          description: "Управление филиалами проектов.",
         },
         subscription: {
           title: "Подписка",
@@ -1445,23 +1445,23 @@ const resources = {
         },
       },
 
-      types: {
-        actions: { add: "Добавить тип" },
+      branches: {
+        actions: { add: "Добавить филиал" },
         table: {
           project: "Проект",
-          name: "Название типа",
+          name: "Название филиала",
           description: "Описание",
           noDescription: "Без описания",
           actions: "Действия",
-          empty: "Типов пока нет.",
+          empty: "Филиалов пока нет.",
         },
         form: {
-          editTitle: "Редактировать тип",
-          createTitle: "Добавить тип",
-          subtitle: "Данные типа",
+          editTitle: "Редактировать филиал",
+          createTitle: "Добавить филиал",
+          subtitle: "Данные филиала",
           project: "Проект",
           projectPlaceholder: "Выберите проект",
-          name: "Название типа",
+          name: "Название филиала",
           description: "Описание",
         },
       },

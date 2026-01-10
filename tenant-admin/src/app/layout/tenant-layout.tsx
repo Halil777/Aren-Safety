@@ -49,9 +49,9 @@ const navItems: NavItem[] = [
     icon: Layers,
     children: [
       { to: "/projects", labelKey: "nav.projects", icon: FolderKanban },
+      { to: "/branches", labelKey: "nav.branches", icon: Tag },
       { to: "/companies", labelKey: "nav.companies", icon: Factory },
       { to: "/departments", labelKey: "nav.departments", icon: Building2 },
-      { to: "/types", labelKey: "nav.types", icon: Tag },
       { to: "/categories", labelKey: "nav.categories", icon: Layers },
       { to: "/subcategories", labelKey: "nav.subcategories", icon: GitBranch },
       { to: "/locations", labelKey: "nav.locations", icon: Building2 },

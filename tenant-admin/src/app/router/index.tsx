@@ -13,6 +13,7 @@ import { LoginPage } from "@/features/auth/pages/login-page";
 import { SupportPage } from "@/features/support/pages/support-page";
 import { SubscriptionPage } from "@/features/subscription/pages/subscription-page";
 import { DashboardPageV2 } from "@/features/dashboard/pages/dashboard-page";
+import { BranchesPage } from "@/features/branches/pages/branches-page";
 
 export const appRouter = createBrowserRouter([
   {
@@ -50,6 +51,10 @@ export const appRouter = createBrowserRouter([
       {
         path: "projects",
         element: <ProjectsListPage />,
+      },
+      {
+        path: "branches",
+        element: <BranchesPage />,
       },
       {
         path: "categories",

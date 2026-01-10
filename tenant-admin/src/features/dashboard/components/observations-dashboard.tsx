@@ -19,13 +19,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useObservationsQuery } from "@/features/observations/api/hooks";
 import { useSupervisorsQuery } from "@/features/supervisors/api/hooks";
 import { CHART_COLORS, buildStatusCardConfig } from "./dashboard-constants";

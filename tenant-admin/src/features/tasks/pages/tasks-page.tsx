@@ -84,8 +84,7 @@ export function TasksPage() {
         deadlineDate: !Number.isNaN(deadline.getTime())
           ? deadline.toISOString().slice(0, 10)
           : "",
-        evidenceFiles: [],
-        correctiveFiles: [],
+        files: [],
       });
     } else {
       setEditingId(null);
@@ -99,8 +98,7 @@ export function TasksPage() {
         description: "",
         status: "OPEN",
         deadlineDate: "",
-        evidenceFiles: [],
-        correctiveFiles: [],
+        files: [],
       });
     }
     setDrawerOpen(true);

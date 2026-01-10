@@ -1158,15 +1158,9 @@ export function ObservationsDashboard() {
             {selectedCharts.includes("projects") && (
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">рџ“Љ</span>
-                    <CardTitle className="text-lg">
-                      {t("dashboard.observationsByProject")}
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-sm">
-                    {t("dashboard.distributionAcrossProjects")}
-                  </CardDescription>
+                  <CardTitle className="text-lg">
+                    {t("dashboard.observationsByProject")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {projectData.length === 0 ? (
@@ -1211,7 +1205,6 @@ export function ObservationsDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџЏў</span>
                     <CardTitle className="text-lg">
                       {t("dashboard.observationsByDepartment")}
                     </CardTitle>
@@ -1284,7 +1277,6 @@ export function ObservationsDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџЏ·</span>
                     <CardTitle className="text-lg">
                       {t("dashboard.observationsByCategory") ||
                         "Observations by Category"}
@@ -1346,7 +1338,6 @@ export function ObservationsDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџ“Ќ</span>
                     <CardTitle className="text-lg">
                       {t("dashboard.observationsByLocation")}
                     </CardTitle>
@@ -1401,7 +1392,6 @@ export function ObservationsDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџ'Ґ</span>
                     <CardTitle className="text-lg">
                       {t("dashboard.top5Supervisors")}
                     </CardTitle>
@@ -1456,7 +1446,6 @@ export function ObservationsDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">🔱</span>
                     <CardTitle className="text-lg">
                       {t("dashboard.observationsByBranch") ||
                         "Observations by Branch"}

@@ -176,7 +176,6 @@ export function ObservationsPage() {
       departmentId: formState.departmentId,
       categoryId: formState.categoryId,
       subcategoryId: formState.subcategoryId,
-      branchId: formState.branchId || undefined,
       workerFullName: formState.workerFullName,
       workerProfession: formState.workerProfession,
       riskLevel: formState.riskLevel,

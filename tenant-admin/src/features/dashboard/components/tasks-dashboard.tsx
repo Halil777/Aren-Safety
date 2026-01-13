@@ -188,7 +188,7 @@ export function TasksDashboard() {
     },
     {
       id: "categories",
-      label: t("Category") || "Tasks by Category",
+      label: t("nav.categories") || "Tasks by Category",
       icon: "🏷",
     },
     {
@@ -970,14 +970,10 @@ export function TasksDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџ“Љ</span>
                     <CardTitle className="text-lg">
                       {taskChartOptions.find((c) => c.id === "projects")?.label}
                     </CardTitle>
                   </div>
-                  <CardDescription className="text-sm">
-                    Distribution across projects
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {taskProjectData.length === 0 ? (
@@ -1022,7 +1018,6 @@ export function TasksDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџЏў</span>
                     <CardTitle className="text-lg">
                       {
                         taskChartOptions.find((c) => c.id === "departments")
@@ -1030,9 +1025,6 @@ export function TasksDashboard() {
                       }
                     </CardTitle>
                   </div>
-                  <CardDescription className="text-sm">
-                    Distribution across departments
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {taskDepartmentData.length === 0 ? (
@@ -1098,7 +1090,6 @@ export function TasksDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">??</span>
                     <CardTitle className="text-lg">
                       {
                         taskChartOptions.find((c) => c.id === "categories")
@@ -1106,10 +1097,6 @@ export function TasksDashboard() {
                       }
                     </CardTitle>
                   </div>
-                  <CardDescription className="text-sm">
-                    {t("dashboard.distributionAcrossCategories") ||
-                      "Distribution across categories"}
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {taskCategoryData.length === 0 ? (
@@ -1153,7 +1140,6 @@ export function TasksDashboard() {
               <Card className="border-border/50 shadow-lg bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">рџ‘Ґ</span>
                     <CardTitle className="text-lg">
                       {
                         taskChartOptions.find((c) => c.id === "supervisors")
@@ -1161,9 +1147,6 @@ export function TasksDashboard() {
                       }
                     </CardTitle>
                   </div>
-                  <CardDescription className="text-sm">
-                    Supervisors with most tasks
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {taskSupervisorData.length === 0 ? (

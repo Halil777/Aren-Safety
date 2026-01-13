@@ -166,6 +166,7 @@ const resources = {
         activeWindow: "Within selected window",
         closedHelper: "Completed in the selected window",
         observationsDashboard: "Observations Dashboard",
+        observationsByBranch: "Branch",
         observationsDashboardDescription:
           "Overview of all observations with filters and analytics",
         filterByDateAndRisk: "Filter observations by date range and risk level",
@@ -664,6 +665,7 @@ const resources = {
         activeWindow: "Seçili zaman aralığında",
         closedHelper: "Seçili zaman aralığında tamamlanan",
         observationsDashboard: "Gözlem Panosu ",
+        observationsByBranch: "Dal",
         observationsDashboardDescription:
           "Filtreler ve analizlerle tüm gözlemlere genel bakış",
         filterByDateAndRisk:
@@ -1156,6 +1158,7 @@ const resources = {
         activeWindow: "В выбранном окне",
         closedHelper: "Завершено в выбранном окне",
         observationsDashboard: "Панель Наблюдений",
+        observationsByBranch: "Филиал",
         observationsDashboardDescription:
           "Обзор всех наблюдений с фильтрами и аналитикой",
         filterByDateAndRisk:
@@ -1190,6 +1193,7 @@ const resources = {
         loadingObservations: "Загрузка наблюдений...",
         noObservations: "Наблюдения не найдены",
         newObservations: "Новые Наблюдения",
+
         new: "Новые",
         seenBySupervisor: "Просмотрено Руководителем",
         seen: "Просмотрено",

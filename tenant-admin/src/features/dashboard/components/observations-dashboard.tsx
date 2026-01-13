@@ -80,8 +80,7 @@ export function ObservationsDashboard() {
     },
     {
       id: "categories",
-      label:
-        t("dashboard.observationsByCategory") || "Observations by Category",
+      label: t("nav.categories") || "Observations by Category",
       icon: <Tags className="h-4 w-4" />,
     },
     {
@@ -96,7 +95,7 @@ export function ObservationsDashboard() {
     },
     {
       id: "branches",
-      label: t("Branch") || "Observations by Branch",
+      label: t("dashboard.observationsByBranch") || "Observations by Branch",
       icon: <GitBranch className="h-4 w-4" />,
     },
   ];

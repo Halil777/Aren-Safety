@@ -13,13 +13,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useTasksQuery } from "@/features/tasks/api/hooks";
 import {
   ResponsiveContainer,

@@ -29,7 +29,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
-import Logo from "@/assets/logo/logo.png";
+// import Logo from "@/assets/logo/logo.png";
+import Logo from "@/assets/logo/esta-logo.png";
 
 type NavItem = {
   to?: string;
@@ -439,7 +440,7 @@ function Sidebar({
                 alt="Tenant logo"
                 className={cn(
                   "w-auto object-contain opacity-90 transition-all",
-                  isOpen ? "h-[120px]" : "h-[60px]"
+                  isOpen ? "h-[60px]" : "h-[60px]"
                 )}
               />
             </div>

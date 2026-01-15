@@ -242,6 +242,16 @@ export async function createObservation(
   }
 }
 
+// Online-only helpers (used by sync worker)
+export async function createObservationOnline(token: string, payload: CreateObservationPayload) {
+  const created = await request<ObservationDto>("/mobile/observations", {
+    token,
+    method: "POST",
+    body: payload,
+  });
+  return normalizeObservation(created);
+}
+
 export async function fetchObservation(
   token: string,
   id: string,
@@ -430,6 +440,16 @@ export async function createTask(token: string, payload: CreateTaskPayload) {
     const local = await createTaskOffline(payload as any);
     return normalizeTask(local as any);
   }
+}
+
+// Online-only helpers (used by sync worker)
+export async function createTaskOnline(token: string, payload: CreateTaskPayload) {
+  const created = await request<TaskDto>("/mobile/tasks", {
+    token,
+    method: "POST",
+    body: payload,
+  });
+  return normalizeTask(created);
 }
 
 export async function fetchTask(

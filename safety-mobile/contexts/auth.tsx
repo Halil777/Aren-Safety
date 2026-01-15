@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQueryClient } from '@tanstack/react-query'
 import { fetchProfile, loginRequest, type LoginResponse, type MobileProfile } from '../services/api'
 import { clearPersistedQueryCache } from '../query/persist'
+import { setSyncAuthToken } from '../offline'
 
 type AuthContextType = {
   token: string | null
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(res.access_token)
     setUser(combined)
     setRole(res.role)
+    setSyncAuthToken(res.access_token)
     await AsyncStorage.multiSet([
       [TOKEN_KEY, res.access_token],
       [USER_KEY, JSON.stringify(res)],
@@ -70,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null)
     setUser(null)
     setRole(null)
+    setSyncAuthToken(null)
     await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY, PROFILE_KEY])
     await clearPersistedQueryCache()
   }, [queryClient])

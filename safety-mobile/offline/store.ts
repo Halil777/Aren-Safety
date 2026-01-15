@@ -609,6 +609,83 @@ export async function createTaskOffline(payload: Partial<TaskDto>) {
   };
 }
 
+export async function markObservationSynced(params: {
+  localId: string;
+  server: ObservationDto;
+}) {
+  const db = await getDb();
+  const { localId, server } = params;
+  const updatedAt = server.updatedAt ?? nowIso();
+  await db.runAsync(
+    `UPDATE observations
+     SET server_id = ?, version = ?, updated_at = ?, sync_status = 'SYNCED',
+         status = COALESCE(?, status),
+         project_id = COALESCE(?, project_id),
+         department_id = COALESCE(?, department_id),
+         category_id = COALESCE(?, category_id),
+         subcategory_id = COALESCE(?, subcategory_id),
+         created_by_user_id = COALESCE(?, created_by_user_id),
+         supervisor_id = COALESCE(?, supervisor_id),
+         worker_full_name = COALESCE(?, worker_full_name),
+         worker_profession = COALESCE(?, worker_profession),
+         risk_level = COALESCE(?, risk_level),
+         description = COALESCE(?, description),
+         deadline = COALESCE(?, deadline),
+         media_json = COALESCE(?, media_json)
+     WHERE local_id = ?`,
+    server.id,
+    server.version ?? 0,
+    updatedAt,
+    server.status ?? null,
+    server.projectId ?? null,
+    server.departmentId ?? null,
+    server.categoryId ?? null,
+    server.subcategoryId ?? null,
+    server.createdByUserId ?? null,
+    server.supervisorId ?? null,
+    server.workerFullName ?? null,
+    server.workerProfession ?? null,
+    server.riskLevel ?? null,
+    server.description ?? null,
+    server.deadline ?? null,
+    mediaToJson(server.media),
+    localId
+  );
+}
+
+export async function markTaskSynced(params: { localId: string; server: TaskDto }) {
+  const db = await getDb();
+  const { localId, server } = params;
+  const updatedAt = server.updatedAt ?? nowIso();
+  await db.runAsync(
+    `UPDATE tasks
+     SET server_id = ?, version = ?, updated_at = ?, sync_status = 'SYNCED',
+         status = COALESCE(?, status),
+         project_id = COALESCE(?, project_id),
+         department_id = COALESCE(?, department_id),
+         category_id = COALESCE(?, category_id),
+         created_by_user_id = COALESCE(?, created_by_user_id),
+         supervisor_id = COALESCE(?, supervisor_id),
+         description = COALESCE(?, description),
+         deadline = COALESCE(?, deadline),
+         media_json = COALESCE(?, media_json)
+     WHERE local_id = ?`,
+    server.id,
+    server.version ?? 0,
+    updatedAt,
+    server.status ?? null,
+    server.projectId ?? null,
+    server.departmentId ?? null,
+    server.categoryId ?? null,
+    server.createdByUserId ?? null,
+    server.supervisorId ?? null,
+    server.description ?? null,
+    server.deadline ?? null,
+    mediaToJson(server.media),
+    localId
+  );
+}
+
 async function runInsertStatements(
   db: Awaited<ReturnType<typeof getDb>>,
   statements: { sql: string; args: any[] }[]

@@ -1,3 +1,26 @@
+import {
+  createObservationOffline,
+  createTaskOffline,
+  getObservationsLocal,
+  getTasksLocal,
+  getObservationLocalById,
+  getTaskLocalById,
+  persistObservationsFromServer,
+  persistTasksFromServer,
+  persistProjectsFromServer,
+  persistDepartmentsFromServer,
+  persistSupervisorsFromServer,
+  persistCategoriesFromServer,
+  persistSubcategoriesFromServer,
+  persistLocationsFromServer,
+  getProjectsLocal,
+  getDepartmentsLocal,
+  getSupervisorsLocal,
+  getCategoriesLocal,
+  getSubcategoriesLocal,
+  getLocationsLocal,
+} from "../offline/store";
+
 // Prefer build-time injected Expo public env vars; fall back to LAN IP so devices don't hit localhost
 const API_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
@@ -181,23 +204,42 @@ export type CreateObservationPayload = {
 };
 
 export async function fetchObservations(token: string, signal?: AbortSignal) {
-  const res = await request<ObservationDto[]>("/mobile/observations", {
-    token,
-    signal,
-  });
-  return res.map(normalizeObservation);
+  try {
+    const res = await request<ObservationDto[]>("/mobile/observations", {
+      token,
+      signal,
+    });
+    const normalized = res.map(normalizeObservation);
+    await persistObservationsFromServer(normalized);
+    return normalized;
+  } catch (err) {
+    const local = await getObservationsLocal();
+    if (local.length) return local.map(normalizeObservation);
+    throw err;
+  }
 }
 
 export async function createObservation(
   token: string,
   payload: CreateObservationPayload
 ) {
-  const created = await request<ObservationDto>("/mobile/observations", {
-    token,
-    method: "POST",
-    body: payload,
-  });
-  return normalizeObservation(created);
+  try {
+    const created = await request<ObservationDto>("/mobile/observations", {
+      token,
+      method: "POST",
+      body: payload,
+    });
+    const normalized = normalizeObservation(created);
+    await persistObservationsFromServer([normalized]);
+    return normalized;
+  } catch (err) {
+    const status = (err as any)?.status as number | undefined;
+    if (status && status >= 400 && status < 500) {
+      throw err;
+    }
+    const local = await createObservationOffline(payload as any);
+    return normalizeObservation(local as any);
+  }
 }
 
 export async function fetchObservation(
@@ -205,11 +247,19 @@ export async function fetchObservation(
   id: string,
   signal?: AbortSignal
 ) {
-  const res = await request<ObservationDto>(`/mobile/observations/${id}`, {
-    token,
-    signal,
-  });
-  return normalizeObservation(res);
+  try {
+    const res = await request<ObservationDto>(`/mobile/observations/${id}`, {
+      token,
+      signal,
+    });
+    const normalized = normalizeObservation(res);
+    await persistObservationsFromServer([normalized]);
+    return normalized;
+  } catch (err) {
+    const local = await getObservationLocalById(id);
+    if (local) return normalizeObservation(local as any);
+    throw err;
+  }
 }
 
 export type LocationDto = {
@@ -219,7 +269,15 @@ export type LocationDto = {
 };
 
 export async function fetchLocations(token: string, signal?: AbortSignal) {
-  return request<LocationDto[]>("/mobile/locations", { token, signal });
+  try {
+    const res = await request<LocationDto[]>("/mobile/locations", { token, signal });
+    await persistLocationsFromServer(res.map((l) => ({ ...l, projectId: l.projectId })));
+    return res;
+  } catch (err) {
+    const local = await getLocationsLocal();
+    if (local.length) return local.map((l) => ({ id: l.id, name: l.name, projectId: l.project_id ?? "" }));
+    throw err;
+  }
 }
 
 export async function answerObservation(
@@ -321,11 +379,26 @@ export type CreateTaskPayload = {
 export async function fetchTasks(token: string, signal?: AbortSignal) {
   try {
     const res = await request<TaskDto[]>("/mobile/tasks", { token, signal });
-    return res.map(normalizeTask);
+    const normalized = res.map(normalizeTask);
+    await persistTasksFromServer(normalized);
+    return normalized;
   } catch (err) {
-    if ((err as any)?.status !== 404) throw err;
-    const fallback = await request<TaskDto[]>("/tasks", { token, signal });
-    return fallback.map(normalizeTask);
+    const status = (err as any)?.status as number | undefined;
+    if (status === 404) {
+      try {
+        const fallback = await request<TaskDto[]>("/tasks", { token, signal });
+        const normalized = fallback.map(normalizeTask);
+        await persistTasksFromServer(normalized);
+        return normalized;
+      } catch (fallbackErr) {
+        const local = await getTasksLocal();
+        if (local.length) return local.map(normalizeTask);
+        throw fallbackErr;
+      }
+    }
+    const local = await getTasksLocal();
+    if (local.length) return local.map(normalizeTask);
+    throw err;
   }
 }
 
@@ -336,15 +409,26 @@ export async function createTask(token: string, payload: CreateTaskPayload) {
       method: "POST",
       body: payload,
     });
-    return normalizeTask(created);
+    const normalized = normalizeTask(created);
+    await persistTasksFromServer([normalized]);
+    return normalized;
   } catch (err) {
-    if ((err as any)?.status !== 404) throw err;
-    const created = await request<TaskDto>("/tasks", {
-      token,
-      method: "POST",
-      body: payload,
-    });
-    return normalizeTask(created);
+    const status = (err as any)?.status as number | undefined;
+    if (status === 404) {
+      const created = await request<TaskDto>("/tasks", {
+        token,
+        method: "POST",
+        body: payload,
+      });
+      const normalized = normalizeTask(created);
+      await persistTasksFromServer([normalized]);
+      return normalized;
+    }
+    if (status && status >= 400 && status < 500) {
+      throw err;
+    }
+    const local = await createTaskOffline(payload as any);
+    return normalizeTask(local as any);
   }
 }
 
@@ -358,14 +442,23 @@ export async function fetchTask(
       token,
       signal,
     });
-    return normalizeTask(res);
+    const normalized = normalizeTask(res);
+    await persistTasksFromServer([normalized]);
+    return normalized;
   } catch (err) {
-    if ((err as any)?.status !== 404) throw err;
+    const status = (err as any)?.status as number | undefined;
+    if (status !== 404) {
+      const local = await getTaskLocalById(id);
+      if (local) return normalizeTask(local as any);
+      throw err;
+    }
     // Some deployments may not have /tasks/:id. Fallback to list + filter.
     const list = await fetchTasks(token, signal);
     const found = list.find((t) => t.id === id);
-    if (!found) throw err;
-    return found;
+    if (found) return found;
+    const local = await getTaskLocalById(id);
+    if (local) return normalizeTask(local as any);
+    throw err;
   }
 }
 
@@ -550,15 +643,41 @@ export type SubcategoryDto = {
 };
 
 export async function fetchProjects(token: string, signal?: AbortSignal) {
-  return request<ProjectDto[]>("/mobile/projects", { token, signal });
+  try {
+    const res = await request<ProjectDto[]>("/mobile/projects", { token, signal });
+    await persistProjectsFromServer(res);
+    return res;
+  } catch (err) {
+    const local = await getProjectsLocal();
+    if (local.length) return local;
+    throw err;
+  }
 }
 
 export async function fetchDepartments(token: string, signal?: AbortSignal) {
-  return request<DepartmentDto[]>("/mobile/departments", { token, signal });
+  try {
+    const res = await request<DepartmentDto[]>("/mobile/departments", { token, signal });
+    await persistDepartmentsFromServer(res);
+    return res;
+  } catch (err) {
+    const local = await getDepartmentsLocal();
+    if (local.length) return local;
+    throw err;
+  }
 }
 
 export async function fetchSupervisors(token: string, signal?: AbortSignal) {
-  return request<SupervisorDto[]>("/mobile/supervisors", { token, signal });
+  try {
+    const res = await request<SupervisorDto[]>("/mobile/supervisors", { token, signal });
+    await persistSupervisorsFromServer(res);
+    return res;
+  } catch (err) {
+    const local = await getSupervisorsLocal();
+    if (local.length) {
+      return local.map((s) => ({ id: s.id, fullName: s.full_name ?? s.id }));
+    }
+    throw err;
+  }
 }
 
 export async function fetchCategories(
@@ -569,7 +688,15 @@ export async function fetchCategories(
   const type = typeof arg2 === "string" ? arg2 : undefined;
   const signal = typeof arg2 === "object" ? arg2 : arg3;
   const qs = type ? `?type=${encodeURIComponent(type)}` : "";
-  return request<CategoryDto[]>(`/mobile/categories${qs}`, { token, signal });
+  try {
+    const res = await request<CategoryDto[]>(`/mobile/categories${qs}`, { token, signal });
+    await persistCategoriesFromServer(res.map((c) => ({ ...c, type })));
+    return res;
+  } catch (err) {
+    const local = await getCategoriesLocal(type);
+    if (local.length) return local.map((c) => ({ id: c.id, name: c.name }));
+    throw err;
+  }
 }
 
 export async function fetchSubcategories(
@@ -584,5 +711,15 @@ export async function fetchSubcategories(
     categoryId
   )}`;
   const path = type ? `${base}&type=${encodeURIComponent(type)}` : base;
-  return request<SubcategoryDto[]>(path, { token, signal });
+  try {
+    const res = await request<SubcategoryDto[]>(path, { token, signal });
+    await persistSubcategoriesFromServer(
+      res.map((s) => ({ ...s, categoryId: s.categoryId ?? categoryId, type }))
+    );
+    return res;
+  } catch (err) {
+    const local = await getSubcategoriesLocal(type, categoryId);
+    if (local.length) return local.map((s) => ({ id: s.id, name: s.name, categoryId: s.category_id ?? categoryId }));
+    throw err;
+  }
 }

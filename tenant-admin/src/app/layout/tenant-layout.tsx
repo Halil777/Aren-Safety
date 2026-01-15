@@ -29,8 +29,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
+
 // import Logo from "@/assets/logo/logo.png";
+
 import Logo from "@/assets/logo/esta-logo.png";
+import { Snowfall } from "@/shared/ui/snowfall";
 
 type NavItem = {
   to?: string;
@@ -500,6 +503,7 @@ function UserBadge({
 }) {
   return (
     <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm">
+      <Snowfall density={50} />
       <div className="hidden leading-tight sm:block">
         <p className="text-sm font-medium text-foreground uppercase">
           {tenantName ?? "Tenant Admin"}

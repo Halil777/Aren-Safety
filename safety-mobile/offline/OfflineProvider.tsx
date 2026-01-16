@@ -21,7 +21,9 @@ type OfflineContextValue = {
   syncing: boolean;
   pendingMutations: number;
   lastSyncedAt: string | null;
+  lastSyncError: string | null;
   syncNow: () => Promise<SyncRunResult | void>;
+  clearSyncError: () => void;
 };
 
 const OfflineContext = createContext<OfflineContextValue | null>(null);
@@ -32,6 +34,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
   const [syncing, setSyncing] = useState(false);
   const [pendingMutations, setPendingMutations] = useState(0);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [lastSyncError, setLastSyncError] = useState<string | null>(null);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -50,13 +53,20 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
       const result = await syncOnce();
       setPendingMutations(result.pendingMutations);
       setLastSyncedAt(new Date().toISOString());
+      setLastSyncError(null); // Clear error on successful sync
       return result;
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
       console.warn("[offline] sync failed", err);
+      setLastSyncError(errorMessage);
     } finally {
       setSyncing(false);
     }
   }, [ready, syncing]);
+
+  const clearSyncError = useCallback(() => {
+    setLastSyncError(null);
+  }, []);
 
   useEffect(() => {
     const subscription = NetInfo.addEventListener((state) => {
@@ -94,9 +104,11 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
       syncing,
       pendingMutations,
       lastSyncedAt,
+      lastSyncError,
       syncNow,
+      clearSyncError,
     }),
-    [ready, isOnline, syncing, pendingMutations, lastSyncedAt, syncNow]
+    [ready, isOnline, syncing, pendingMutations, lastSyncedAt, lastSyncError, syncNow, clearSyncError]
   );
 
   return <OfflineContext.Provider value={value}>{children}</OfflineContext.Provider>;

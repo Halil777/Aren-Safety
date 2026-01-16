@@ -252,6 +252,17 @@ export async function createObservationOnline(token: string, payload: CreateObse
   return normalizeObservation(created);
 }
 
+export type UpdateObservationPayload = Partial<CreateObservationPayload>;
+
+export async function updateObservationOnline(token: string, id: string, payload: UpdateObservationPayload) {
+  const updated = await request<ObservationDto>(`/mobile/observations/${id}`, {
+    token,
+    method: "PATCH",
+    body: payload,
+  });
+  return normalizeObservation(updated);
+}
+
 export async function fetchObservation(
   token: string,
   id: string,
@@ -329,6 +340,13 @@ export async function rejectObservation(
     body: { status: "REJECTED", rejectionReason: reason },
   });
   return normalizeObservation(updated);
+}
+
+export async function deleteObservationOnline(token: string, id: string) {
+  await request<{ success: boolean }>(`/mobile/observations/${id}`, {
+    token,
+    method: "DELETE",
+  });
 }
 
 export type TaskDto = {
@@ -450,6 +468,24 @@ export async function createTaskOnline(token: string, payload: CreateTaskPayload
     body: payload,
   });
   return normalizeTask(created);
+}
+
+export type UpdateTaskPayload = Partial<CreateTaskPayload>;
+
+export async function updateTaskOnline(token: string, id: string, payload: UpdateTaskPayload) {
+  const updated = await request<TaskDto>(`/mobile/tasks/${id}`, {
+    token,
+    method: "PATCH",
+    body: payload,
+  });
+  return normalizeTask(updated);
+}
+
+export async function deleteTaskOnline(token: string, id: string) {
+  await request<{ success: boolean }>(`/mobile/tasks/${id}`, {
+    token,
+    method: "DELETE",
+  });
 }
 
 export async function fetchTask(
